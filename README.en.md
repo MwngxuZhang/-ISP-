@@ -59,6 +59,7 @@ http://127.0.0.1:4173
 - Load small `.pgm` and `.raw` files for RAW input experiments
 - Adjust black level, white level, BPC, LSC, WB, CCM, exposure, gamma, denoise, and sharpen in real time
 - See every stage as an image preview, histogram, metric panel, and interactive formula
+- Use formula sliders that sync into the real ISP pipeline, so the diagram and real case image change together
 - Learn with an animated mascot that explains each step in beginner-friendly language
 - Switch the web UI between English and Chinese
 - Export the final PNG and ISP preset JSON

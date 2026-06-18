@@ -183,6 +183,10 @@ assert.ok(app.includes("getFormulaContent"), "App missing formula content loadin
 assert.ok(app.includes("drawFormulaDiagram"), "App missing interactive formula diagram rendering");
 assert.ok(app.includes("formulaInput"), "App missing formula slider interaction");
 assert.ok(app.includes("formulaResetButton"), "App missing formula reset interaction");
+assert.ok(app.includes("applyFormulaToPipeline"), "Formula slider must drive the real ISP pipeline");
+assert.ok(app.includes("ensureFormulaRawBaseline"), "RAW formula brightness must use a stable RAW baseline");
+assert.ok(app.includes("setControlValue(els.black"), "Black-level formula must update the real black-level control");
+assert.ok(app.includes("setControlValue(els.denoise"), "Denoise formula must update the real denoise control");
 assert.ok(app.includes("devicePixelRatio"), "Formula canvas missing high-DPI rendering");
 assert.ok(app.includes("setMascotExpression"), "App missing mascot expression controller");
 assert.ok(app.includes("expr-surprised"), "App missing expressive mascot states");

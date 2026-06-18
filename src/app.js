@@ -352,6 +352,7 @@ let petTimer = 0;
 let currentLanguage = loadLanguage();
 let tutorialSteps = getTutorialSteps(currentLanguage);
 let tutorialLabels = getTutorialLabels(currentLanguage);
+let formulaRawBaseline = null;
 
 const defaultControls = {
   badPixel: 0.32,
@@ -465,6 +466,44 @@ function numberValue(input) {
 
 function setNumber(input, value) {
   input.value = Number(value).toFixed(input.step && input.step.includes(".") ? 2 : 0);
+}
+
+function clampNumber(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function anchoredMap(value, min, anchor, max, outMin, outAnchor, outMax) {
+  if (value <= anchor) {
+    const t = (value - min) / (anchor - min || 1);
+    return outMin + clampNumber(t, 0, 1) * (outAnchor - outMin);
+  }
+  const t = (value - anchor) / (max - anchor || 1);
+  return outAnchor + clampNumber(t, 0, 1) * (outMax - outAnchor);
+}
+
+function setControlValue(input, value) {
+  const min = input.min === "" ? -Infinity : Number(input.min);
+  const max = input.max === "" ? Infinity : Number(input.max);
+  const nextValue = clampNumber(Number(value), min, max);
+  input.value = input.step && input.step.includes(".") ? nextValue.toFixed(2) : String(Math.round(nextValue));
+}
+
+function cloneRaw(raw) {
+  return {
+    ...raw,
+    data: raw.data?.slice ? raw.data.slice() : new Float32Array(raw.data)
+  };
+}
+
+function resetFormulaRawBaseline() {
+  formulaRawBaseline = null;
+}
+
+function ensureFormulaRawBaseline() {
+  if (!formulaRawBaseline || formulaRawBaseline.width !== currentRaw.width || formulaRawBaseline.height !== currentRaw.height) {
+    formulaRawBaseline = cloneRaw(currentRaw);
+  }
+  return formulaRawBaseline;
 }
 
 function currentOptions() {
@@ -751,6 +790,49 @@ function updateFormulaLab(step) {
   updateFormulaResult(content, Number(els.formulaInput.value));
 }
 
+function applyFormulaToPipeline(stageKey, value, content) {
+  currentHeroStage = stageKey;
+  const min = Number(content.interaction.min);
+  const max = Number(content.interaction.max);
+  const anchor = Number(content.interaction.value);
+  const t = clampNumber((value - min) / (max - min || 1), 0, 1);
+  const whiteLevel = Math.max(1, numberValue(els.white));
+
+  if (stageKey === "raw") {
+    const baseline = ensureFormulaRawBaseline();
+    const factor = anchoredMap(value, min, anchor, max, 0.35, 1, 1.85);
+    const data = new Float32Array(baseline.data.length);
+    for (let i = 0; i < baseline.data.length; i += 1) {
+      data[i] = clampNumber(baseline.data[i] * factor, 0, whiteLevel);
+    }
+    currentRaw = { ...baseline, data };
+  } else if (stageKey === "norm") {
+    const defaultBlack = currentRaw.blackLevel ?? 64;
+    setControlValue(els.black, anchoredMap(value, min, anchor, max, 0, defaultBlack, whiteLevel * 0.28));
+  } else if (stageKey === "bad") {
+    setControlValue(els.badPixel, value);
+  } else if (stageKey === "lsc") {
+    setControlValue(els.lsc, value);
+  } else if (stageKey === "demosaic") {
+    const patterns = ["RGGB", "GRBG", "GBRG", "BGGR"];
+    els.bayer.value = patterns[Math.min(patterns.length - 1, Math.floor(t * patterns.length))];
+  } else if (stageKey === "wb") {
+    setControlValue(els.redGain, anchoredMap(value, min, anchor, max, 1.1, defaultControls.redGain, 3.2));
+    setControlValue(els.greenGain, 1);
+    setControlValue(els.blueGain, anchoredMap(value, min, anchor, max, 2.35, defaultControls.blueGain, 0.75));
+  } else if (stageKey === "ccm") {
+    els.ccm.value = t < 0.34 ? "identity" : t < 0.68 ? "srgbLike" : "warm";
+  } else if (stageKey === "denoise") {
+    setControlValue(els.denoise, value);
+  } else if (stageKey === "sharpen") {
+    setControlValue(els.sharpen, value);
+  } else if (stageKey === "tone") {
+    setControlValue(els.gamma, value);
+  }
+
+  render();
+}
+
 function stageLabel(key) {
   return stageDefs.find(([stageKey]) => stageKey === key)?.[1] ?? "Stage";
 }
@@ -972,6 +1054,7 @@ function loadDemoCase(demo) {
     els.bayer.value,
     demo.scene
   );
+  resetFormulaRawBaseline();
   syncMetadata(currentRaw);
   render();
   const readyMessage = currentLanguage === "zh"
@@ -1082,6 +1165,7 @@ async function loadFile(file) {
       whiteLevel: numberValue(els.white)
     };
   }
+  resetFormulaRawBaseline();
   syncMetadata(currentRaw);
   render();
 }
@@ -1104,6 +1188,7 @@ els.sampleButton.addEventListener("click", () => {
     els.bayer.value,
     els.sampleScene.value
   );
+  resetFormulaRawBaseline();
   syncMetadata(currentRaw);
   updateDemoActive();
   render();
@@ -1247,10 +1332,12 @@ for (const input of document.querySelectorAll("input, select")) {
 els.formulaInput.addEventListener("input", () => {
   const step = tutorialSteps[currentTutorialIndex];
   const content = getFormulaContent(step.key, currentLanguage);
-  updateFormulaResult(content, Number(els.formulaInput.value));
+  const value = Number(els.formulaInput.value);
+  applyFormulaToPipeline(step.key, value, content);
+  updateFormulaResult(content, value);
   const message = currentLanguage === "zh"
-    ? `我正在只改变公式里的“${content.interaction.label}”。看小图如何变化，再回到真实图像里找同样的趋势。`
-    : `I am changing only "${content.interaction.label}" in the formula. Watch the mini diagram, then look for the same trend in the real image.`;
+    ? `我正在把公式里的“${content.interaction.label}”同步到真实 ISP 参数。小图和真实案例图会一起变化。`
+    : `I am syncing "${content.interaction.label}" from the formula into the real ISP pipeline. The mini diagram and real case image now change together.`;
   reactMascot("think", message);
   movePetNear(els.formulaInput, message, "think");
 });
@@ -1259,7 +1346,9 @@ els.formulaResetButton.addEventListener("click", () => {
   const step = tutorialSteps[currentTutorialIndex];
   const content = getFormulaContent(step.key, currentLanguage);
   els.formulaInput.value = els.formulaInput.dataset.default || content.interaction.value;
-  updateFormulaResult(content, Number(els.formulaInput.value));
+  const value = Number(els.formulaInput.value);
+  applyFormulaToPipeline(step.key, value, content);
+  updateFormulaResult(content, value);
   const message = text("formulaResetDone");
   reactMascot("wave", message);
   movePetNear(els.formulaResetButton, message, "wave");
