@@ -120,11 +120,18 @@ export function generateSyntheticRaw(width = 128, height = 96, bitDepth = 12, pa
 
   const defectPixels = scene === "badPixels"
     ? [
+        [0.08, 0.16, whiteLevel],
         [0.18, 0.2, whiteLevel],
-        [0.72, 0.38, whiteLevel],
-        [0.48, 0.76, 0],
+        [0.24, 0.68, 0],
         [0.32, 0.55, whiteLevel],
-        [0.86, 0.72, 0]
+        [0.39, 0.33, 0],
+        [0.48, 0.76, 0],
+        [0.58, 0.18, whiteLevel],
+        [0.64, 0.62, whiteLevel],
+        [0.72, 0.38, whiteLevel],
+        [0.78, 0.84, 0],
+        [0.86, 0.72, 0],
+        [0.92, 0.26, whiteLevel]
       ]
     : [
         [0.18, 0.2, whiteLevel],

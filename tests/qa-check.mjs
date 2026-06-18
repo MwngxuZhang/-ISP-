@@ -18,9 +18,11 @@ const requiredFiles = [
   "LICENSE",
   "src/isp-core.js",
   "src/app.js",
+  "src/app-production-pipeline.js",
   "src/demo-cases.js",
   "src/formula-content.js",
   "src/tutorial-content.js",
+  "src/tutorial-content-pipeline.js",
   "src/styles.css",
   "assets/mascot-guide.png",
   "assets/demos/color-chart.png",
@@ -109,6 +111,8 @@ for (const id of [
   "coachGotItButton",
   "coachRestartButton",
   "coachProgressBar",
+  "coachProductionLabel",
+  "coachProduction",
   "coachAnalogyLabel",
   "coachAnalogy",
   "coachControl",
@@ -171,6 +175,7 @@ assert.ok(app.includes("getDemoCases"), "App does not load localized demo cases"
 assert.ok(app.includes("setLanguage"), "App missing language switch behavior");
 assert.ok(app.includes("rawIspRgbLanguage"), "App missing persisted language preference");
 assert.ok(app.includes("renderDemoGallery"), "App missing demo gallery rendering");
+assert.ok(app.includes("loadSelectedScene"), "Built-in case selector should load scenes directly");
 assert.ok(app.includes("applyTutorialTip"), "App missing tutorial tip behavior");
 assert.ok(app.includes("completedTutorialStages"), "App missing tutorial progress tracking");
 assert.ok(app.includes("coachGotItButton"), "App missing got-it behavior");
@@ -192,6 +197,8 @@ assert.ok(app.includes("setMascotExpression"), "App missing mascot expression co
 assert.ok(app.includes("expr-surprised"), "App missing expressive mascot states");
 assert.ok(!app.includes("fillText"), "Formula diagrams should keep text in HTML for crisp rendering");
 assert.ok(tutorial.includes("controlLabel"), "Tutorial labels missing control guidance");
+assert.ok(tutorial.includes("productionLabel"), "Tutorial labels missing production pipeline label");
+assert.ok(tutorial.includes("productionNotes"), "Tutorial content missing phone/camera module mapping");
 assert.ok(tutorial.includes("analogyLabel"), "Tutorial labels missing visual analogy guidance");
 assert.ok(tutorial.includes("mistakeLabel"), "Tutorial labels missing beginner trap guidance");
 assert.ok(tutorial.includes("bubble"), "Tutorial content missing speech bubbles");
@@ -209,6 +216,7 @@ assert.ok(index.includes("pixel-cheek"), "index.html missing cute mascot cheeks"
 assert.ok(index.includes("pixel-sparkle"), "index.html missing mascot sparkle expression");
 assert.ok(index.includes("formula-lab"), "index.html missing interactive formula panel");
 assert.ok(index.includes("formula-legend"), "index.html missing current/default formula legend");
+assert.ok(index.includes("src/app-production-pipeline.js"), "index.html should load the cache-busted production app entry");
 assert.ok(app.includes("tapBubble || step.bubble"), "App missing richer stage-click mascot language");
 
 for (const stage of ["raw", "norm", "bad", "lsc", "demosaic", "wb", "ccm", "denoise", "sharpen", "tone"]) {
