@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>学习 ISP？有我就够啦</title>
+    <link rel="stylesheet" href="./src/styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <h1>学习 ISP？有我就够啦</h1>
+        <p>RAW Bayer -> ISP stages -> RGB preview</p>
+      </div>
+      <div class="actions">
+        <label class="language-control">Language
+          <select id="languageInput">
+            <option value="en">English</option>
+            <option value="zh">中文</option>
+          </select>
+        </label>
+        <button id="sampleButton" type="button">Load Case</button>
+        <button id="autoWbButton" type="button">Auto WB</button>
+        <button id="autoExposureButton" type="button">Auto EV</button>
+        <button id="resetButton" type="button">Reset</button>
+        <button id="exportButton" type="button">Export PNG</button>
+        <button id="presetButton" type="button">Preset JSON</button>
+        <a class="guide-link" href="./docs/USER_GUIDE.zh-CN.md" target="_blank">Guide</a>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <aside class="controls" aria-label="ISP controls">
+        <section>
+          <h2>Input</h2>
+          <label>Built-in case
+            <select id="sampleSceneInput">
+              <option value="colorChart">Color chart</option>
+              <option value="lowLight">Low light</option>
+              <option value="vignette">Vignette</option>
+              <option value="badPixels">Bad pixels</option>
+              <option value="grayscale">Grayscale ramp</option>
+              <option value="highContrast">High contrast</option>
+            </select>
+          </label>
+          <p id="sampleDescription" class="hint">Saturated color patches plus neutral patches for checking demosaic, white balance, and CCM.</p>
+          <label class="file-picker">
+            <span>Load PGM or RAW</span>
+            <input id="fileInput" type="file" accept=".pgm,.raw,.bin,application/octet-stream">
+          </label>
+          <div class="grid-2">
+            <label>Width <input id="widthInput" type="number" min="2" value="128"></label>
+            <label>Height <input id="heightInput" type="number" min="2" value="96"></label>
+            <label>Bit depth <input id="bitDepthInput" type="number" min="8" max="16" value="12"></label>
+            <label>Endian
+              <select id="endianInput">
+                <option value="little">Little</option>
+                <option value="big">Big</option>
+              </select>
+            </label>
+          </div>
+          <label>Bayer pattern
+            <select id="bayerInput">
+              <option>RGGB</option>
+              <option>BGGR</option>
+              <option>GRBG</option>
+              <option>GBRG</option>
+            </select>
+          </label>
+        </section>
+
+        <section>
+          <h2>RAW Cleanup</h2>
+          <label>Black level <input id="blackInput" type="number" min="0" value="64"></label>
+          <label>White level <input id="whiteInput" type="number" min="1" value="4095"></label>
+          <label>Bad pixel threshold <input id="badPixelInput" type="range" min="0" max="1" step="0.01" value="0.32"><output id="badPixelValue">0.32</output></label>
+          <label>Lens shading <input id="lscInput" type="range" min="0" max="1.2" step="0.01" value="0.25"><output id="lscValue">0.25</output></label>
+        </section>
+
+        <section>
+          <h2>White Balance</h2>
+          <label>Red gain <input id="redGainInput" type="range" min="0.2" max="4" step="0.01" value="2.0"><output id="redGainValue">2.00</output></label>
+          <label>Green gain <input id="greenGainInput" type="range" min="0.2" max="4" step="0.01" value="1.0"><output id="greenGainValue">1.00</output></label>
+          <label>Blue gain <input id="blueGainInput" type="range" min="0.2" max="4" step="0.01" value="1.6"><output id="blueGainValue">1.60</output></label>
+        </section>
+
+        <section>
+          <h2>Color And Tone</h2>
+          <label>CCM preset
+            <select id="ccmInput">
+              <option value="identity">Identity</option>
+              <option value="srgbLike" selected>sRGB-like</option>
+              <option value="warm">Warm camera</option>
+              <option value="cool">Cool camera</option>
+            </select>
+          </label>
+          <label>Exposure EV <input id="exposureInput" type="range" min="-2" max="2" step="0.05" value="0"><output id="exposureValue">0.00</output></label>
+          <label>Contrast <input id="contrastInput" type="range" min="0.5" max="1.8" step="0.01" value="1"><output id="contrastValue">1.00</output></label>
+          <label>Saturation <input id="saturationInput" type="range" min="0" max="2" step="0.01" value="1"><output id="saturationValue">1.00</output></label>
+          <label>Gamma <input id="gammaInput" type="range" min="1" max="3" step="0.01" value="2.2"><output id="gammaValue">2.20</output></label>
+        </section>
+
+        <section>
+          <h2>Detail</h2>
+          <label>Denoise <input id="denoiseInput" type="range" min="0" max="1" step="0.01" value="0.12"><output id="denoiseValue">0.12</output></label>
+          <label>Sharpen <input id="sharpenInput" type="range" min="0" max="2" step="0.01" value="0.35"><output id="sharpenValue">0.35</output></label>
+        </section>
+
+        <section>
+          <h2>Readout</h2>
+          <dl class="readout">
+            <div><dt>Frame</dt><dd id="frameReadout">-</dd></div>
+            <div><dt>Range</dt><dd id="rangeReadout">-</dd></div>
+            <div><dt>Mean</dt><dd id="meanReadout">-</dd></div>
+            <div><dt>Bad pixels</dt><dd id="badPixelReadout">-</dd></div>
+          </dl>
+        </section>
+
+        <p id="status" role="status">Ready.</p>
+      </aside>
+
+      <section class="lab" aria-label="Pipeline lab">
+        <section class="demo-section" aria-label="Demo image gallery">
+          <div>
+            <h2 id="demoHeading">Choose a tested demo image</h2>
+            <p id="demoIntro">Pick one image, then follow the guide from RAW to RGB.</p>
+          </div>
+          <div id="demoGallery" class="demo-gallery"></div>
+        </section>
+
+        <nav id="pipelineRail" class="pipeline-rail" aria-label="ISP pipeline"></nav>
+
+        <section class="hero-stage" aria-label="Final RGB preview">
+          <canvas id="finalCanvas"></canvas>
+          <div class="side-panel">
+            <div class="hero-meta">
+              <span id="heroTitle">Final RGB</span>
+              <span id="heroValues">-</span>
+            </div>
+            <article class="coach-card" aria-label="ISP guide">
+              <div class="coach-head">
+                <div id="coachMascotStage" class="coach-mascot-stage" aria-label="Animated ISP guide mascot">
+                  <div id="coachBubble" class="coach-bubble">RAW is not a photo yet.</div>
+                  <div id="coachMascot" class="pixel-3d pixel-3d-large" role="img" aria-label="3D Pixel ISP guide mascot">
+                    <span class="pixel-shadow"></span>
+                    <span class="pixel-body"></span>
+                    <span class="pixel-arm pixel-arm-left"></span>
+                    <span class="pixel-arm pixel-arm-right"></span>
+                    <span class="pixel-leg pixel-leg-left"></span>
+                    <span class="pixel-leg pixel-leg-right"></span>
+                    <span class="pixel-head">
+                      <span class="pixel-ear pixel-ear-left"></span>
+                      <span class="pixel-ear pixel-ear-right"></span>
+                      <span class="pixel-brow pixel-brow-left"></span>
+                      <span class="pixel-brow pixel-brow-right"></span>
+                      <span class="pixel-eye pixel-eye-left"></span>
+                      <span class="pixel-eye pixel-eye-right"></span>
+                      <span class="pixel-cheek pixel-cheek-left"></span>
+                      <span class="pixel-cheek pixel-cheek-right"></span>
+                      <span class="pixel-lens"></span>
+                      <span class="pixel-mouth"></span>
+                      <span class="pixel-sparkle"></span>
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <h2 id="coachHeading">Pixel, your ISP guide</h2>
+                  <p id="coachIntro">Follow the stages from RAW to RGB. Click a stage or use Next.</p>
+                </div>
+              </div>
+              <div class="coach-step">
+                <p class="eyebrow" id="coachStepNumber">Step 1 / 10</p>
+                <h3 id="coachStageTitle">01 RAW Mosaic</h3>
+                <div class="coach-progress" aria-label="Tutorial progress">
+                  <span id="coachProgressBar"></span>
+                </div>
+                <p class="coach-progress-text" id="coachProgressText">0 / 10 checkpoints</p>
+                <dl class="coach-copy">
+                  <div><dt id="coachPlainLabel">What it does</dt><dd id="coachPlain">-</dd></div>
+                  <div><dt id="coachWhyLabel">Why it exists</dt><dd id="coachWhy">-</dd></div>
+                  <div><dt id="coachAnalogyLabel">Picture it</dt><dd id="coachAnalogy">-</dd></div>
+                  <div><dt id="coachWatchLabel">Watch for</dt><dd id="coachWatch">-</dd></div>
+                  <div><dt id="coachTryLabel">Try this</dt><dd id="coachTry">-</dd></div>
+                  <div><dt id="coachControlLabel">Control to touch</dt><dd id="coachControl">-</dd></div>
+                  <div><dt id="coachExpectedLabel">Expected result</dt><dd id="coachExpected">-</dd></div>
+                  <div><dt id="coachMistakeLabel">Common beginner trap</dt><dd id="coachMistake">-</dd></div>
+                  <div><dt id="coachCheckpointLabel">Checkpoint</dt><dd id="coachCheckpoint">-</dd></div>
+                </dl>
+                <section class="formula-lab" aria-label="Interactive formula explanation">
+                  <div class="formula-head">
+                    <p class="eyebrow" id="formulaEyebrow">Interactive formula</p>
+                    <h4 id="formulaTitle">Bayer sampling model</h4>
+                  </div>
+                  <p id="formulaText" class="formula-text">RAW(x,y) = C(x,y) * E(x,y) + n(x,y)</p>
+                  <canvas id="formulaCanvas" class="formula-canvas" aria-label="Formula visual diagram"></canvas>
+                  <div class="formula-legend" aria-label="Formula diagram legend">
+                    <span><i class="legend-current"></i><span id="formulaLegendCurrent">Current value</span></span>
+                    <span><i class="legend-default"></i><span id="formulaLegendDefault">Default value</span></span>
+                  </div>
+                  <label class="formula-control">
+                    <span id="formulaControlLabel">Scene brightness</span>
+                    <input id="formulaInput" type="range" min="0" max="1" step="0.01" value="0.35">
+                    <output id="formulaValue">0.35</output>
+                  </label>
+                  <div class="formula-scale" aria-label="Formula control scale">
+                    <span id="formulaScaleLow">Low</span>
+                    <button id="formulaResetButton" type="button">Reset formula</button>
+                    <span id="formulaScaleHigh">High</span>
+                  </div>
+                  <p id="formulaResult" class="formula-result">Move the slider to see the principle.</p>
+                  <dl id="formulaVariables" class="formula-variables"></dl>
+                  <p id="formulaExplanation" class="formula-explanation">-</p>
+                </section>
+              </div>
+              <div class="coach-actions">
+                <button id="coachPrevButton" type="button">Previous</button>
+                <button id="coachApplyButton" type="button">Apply tip</button>
+                <button id="coachNextButton" type="button">Next</button>
+              </div>
+              <div class="coach-actions secondary">
+                <button id="coachGotItButton" type="button">I got it</button>
+                <button id="coachRestartButton" type="button">Restart tour</button>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="viewer" aria-label="Pipeline stage previews">
+          <article class="stage" data-stage="raw"><h2>01 RAW Mosaic</h2><canvas id="rawCanvas"></canvas><canvas class="histogram" id="rawHist"></canvas><p class="metric" id="rawMetric">-</p></article>
+          <article class="stage" data-stage="norm"><h2>02 Black Level</h2><canvas id="normCanvas"></canvas><canvas class="histogram" id="normHist"></canvas><p class="metric" id="normMetric">-</p></article>
+          <article class="stage" data-stage="bad"><h2>03 Bad Pixel</h2><canvas id="badCanvas"></canvas><canvas class="histogram" id="badHist"></canvas><p class="metric" id="badMetric">-</p></article>
+          <article class="stage" data-stage="lsc"><h2>04 Lens Shading</h2><canvas id="lscCanvas"></canvas><canvas class="histogram" id="lscHist"></canvas><p class="metric" id="lscMetric">-</p></article>
+          <article class="stage" data-stage="demosaic"><h2>05 Demosaic</h2><canvas id="demosaicCanvas"></canvas><canvas class="histogram" id="demosaicHist"></canvas><p class="metric" id="demosaicMetric">-</p></article>
+          <article class="stage" data-stage="wb"><h2>06 White Balance</h2><canvas id="wbCanvas"></canvas><canvas class="histogram" id="wbHist"></canvas><p class="metric" id="wbMetric">-</p></article>
+          <article class="stage" data-stage="ccm"><h2>07 Color Matrix</h2><canvas id="ccmCanvas"></canvas><canvas class="histogram" id="ccmHist"></canvas><p class="metric" id="ccmMetric">-</p></article>
+          <article class="stage" data-stage="denoise"><h2>08 Denoise</h2><canvas id="denoiseCanvas"></canvas><canvas class="histogram" id="denoiseHist"></canvas><p class="metric" id="denoiseMetric">-</p></article>
+          <article class="stage" data-stage="sharpen"><h2>09 Sharpen</h2><canvas id="sharpenCanvas"></canvas><canvas class="histogram" id="sharpenHist"></canvas><p class="metric" id="sharpenMetric">-</p></article>
+          <article class="stage" data-stage="tone"><h2>10 Tone + Gamma</h2><canvas id="toneCanvas"></canvas><canvas class="histogram" id="toneHist"></canvas><p class="metric" id="toneMetric">-</p></article>
+        </section>
+      </section>
+    </main>
+
+    <aside id="floatingPet" class="floating-pet" aria-label="Floating ISP pet guide">
+      <div id="petBubble" class="pet-bubble">Pick a demo image and I will follow the pipeline.</div>
+      <button id="petAvatar" class="pet-avatar" type="button" aria-label="Ask the ISP pet for help">
+        <span id="petMascot" class="pixel-3d pixel-3d-small" aria-hidden="true">
+          <span class="pixel-shadow"></span>
+          <span class="pixel-body"></span>
+          <span class="pixel-arm pixel-arm-left"></span>
+          <span class="pixel-arm pixel-arm-right"></span>
+          <span class="pixel-leg pixel-leg-left"></span>
+          <span class="pixel-leg pixel-leg-right"></span>
+          <span class="pixel-head">
+            <span class="pixel-ear pixel-ear-left"></span>
+            <span class="pixel-ear pixel-ear-right"></span>
+            <span class="pixel-brow pixel-brow-left"></span>
+            <span class="pixel-brow pixel-brow-right"></span>
+            <span class="pixel-eye pixel-eye-left"></span>
+            <span class="pixel-eye pixel-eye-right"></span>
+            <span class="pixel-cheek pixel-cheek-left"></span>
+            <span class="pixel-cheek pixel-cheek-right"></span>
+            <span class="pixel-lens"></span>
+            <span class="pixel-mouth"></span>
+            <span class="pixel-sparkle"></span>
+          </span>
+        </span>
+      </button>
+    </aside>
+
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>

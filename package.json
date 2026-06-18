@@ -1,0 +1,20 @@
+{
+  "name": "raw-to-rgb-isp-lab",
+  "version": "0.0.0",
+  "description": "Open-source visual RAW to ISP to RGB learning toolchain.",
+  "type": "module",
+  "scripts": {
+    "qa": "node tests/qa-check.mjs && node tests/run-tests.mjs",
+    "test": "node tests/run-tests.mjs",
+    "start": "node scripts/static-server.mjs"
+  },
+  "keywords": [
+    "raw",
+    "isp",
+    "rgb",
+    "image-processing",
+    "camera-pipeline",
+    "visualization"
+  ],
+  "license": "MIT"
+}

@@ -1,0 +1,218 @@
+import assert from "node:assert/strict";
+import { existsSync, readFileSync } from "node:fs";
+import { readdir } from "node:fs/promises";
+import { dirname, join, normalize, relative, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+
+const requiredFiles = [
+  "README.md",
+  "README.en.md",
+  "README.zh-CN.md",
+  "CONTRIBUTING.md",
+  "CONTRIBUTING.en.md",
+  "CONTRIBUTING.zh-CN.md",
+  "index.html",
+  "package.json",
+  "LICENSE",
+  "src/isp-core.js",
+  "src/app.js",
+  "src/demo-cases.js",
+  "src/formula-content.js",
+  "src/tutorial-content.js",
+  "src/styles.css",
+  "assets/mascot-guide.png",
+  "assets/demos/color-chart.png",
+  "assets/demos/low-light.png",
+  "assets/demos/vignette.png",
+  "assets/demos/bad-pixels.png",
+  "assets/demos/grayscale-ramp.png",
+  "assets/demos/high-contrast.png",
+  "tests/run-tests.mjs",
+  "scripts/static-server.mjs",
+  "docs/USER_GUIDE.md",
+  "docs/USER_GUIDE.en.md",
+  "docs/USER_GUIDE.zh-CN.md",
+  "docs/TECHNICAL_DESIGN.en.md",
+  "docs/TECHNICAL_DESIGN.zh-CN.md",
+  "docs/DEVELOPMENT_PLAN.en.md",
+  "docs/DEVELOPMENT_PLAN.zh-CN.md",
+  "docs/PROJECT_UNDERSTANDING.en.md",
+  "docs/PROJECT_UNDERSTANDING.zh-CN.md",
+  "docs/EDUCATIONAL_ASSISTANT_UNDERSTANDING.en.md",
+  "docs/EDUCATIONAL_ASSISTANT_UNDERSTANDING.zh-CN.md",
+  "docs/EDUCATIONAL_ASSISTANT_TECHNICAL_DESIGN.en.md",
+  "docs/EDUCATIONAL_ASSISTANT_TECHNICAL_DESIGN.zh-CN.md",
+  "docs/EDUCATIONAL_ASSISTANT_DEVELOPMENT_PLAN.en.md",
+  "docs/EDUCATIONAL_ASSISTANT_DEVELOPMENT_PLAN.zh-CN.md",
+  "samples/synthetic-rggb-8x8.pgm",
+  "samples/synthetic-rggb-16x12-12bit-little.raw",
+  "samples/synthetic-rggb-16x12-12bit-little.json"
+];
+
+for (const file of requiredFiles) {
+  assert.ok(existsSync(join(root, file)), `Missing required file: ${file}`);
+}
+
+async function markdownFiles(dir) {
+  const out = [];
+  for (const entry of await readdir(dir, { withFileTypes: true })) {
+    const fullPath = join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...await markdownFiles(fullPath));
+    if (entry.isFile() && entry.name.endsWith(".md")) out.push(fullPath);
+  }
+  return out;
+}
+
+const missingLinks = [];
+for (const filePath of await markdownFiles(root)) {
+  const text = readFileSync(filePath, "utf8");
+  assert.ok(text.trim().length > 80, `Markdown file is too small: ${relative(root, filePath)}`);
+
+  for (const match of text.matchAll(/\[[^\]]+\]\(([^)]+)\)/g)) {
+    const target = match[1];
+    if (target.includes("://") || target.startsWith("#")) continue;
+    const clean = target.split("#", 1)[0];
+    if (!clean) continue;
+    const resolved = normalize(resolve(dirname(filePath), clean));
+    if (!existsSync(resolved)) {
+      missingLinks.push(`${relative(root, filePath)} -> ${target}`);
+    }
+  }
+}
+assert.deepEqual(missingLinks, []);
+
+const index = readFileSync(join(root, "index.html"), "utf8");
+const app = readFileSync(join(root, "src/app.js"), "utf8");
+const core = readFileSync(join(root, "src/isp-core.js"), "utf8");
+const formulas = readFileSync(join(root, "src/formula-content.js"), "utf8");
+const tutorial = readFileSync(join(root, "src/tutorial-content.js"), "utf8");
+const demoCases = readFileSync(join(root, "src/demo-cases.js"), "utf8");
+
+for (const id of [
+  "languageInput",
+  "demoHeading",
+  "demoIntro",
+  "sampleSceneInput",
+  "demoGallery",
+  "autoWbButton",
+  "autoExposureButton",
+  "exportButton",
+  "presetButton",
+  "coachMascot",
+  "coachMascotStage",
+  "coachBubble",
+  "coachPrevButton",
+  "coachNextButton",
+  "coachApplyButton",
+  "coachGotItButton",
+  "coachRestartButton",
+  "coachProgressBar",
+  "coachAnalogyLabel",
+  "coachAnalogy",
+  "coachControl",
+  "coachExpected",
+  "coachMistake",
+  "coachCheckpoint",
+  "formulaEyebrow",
+  "formulaTitle",
+  "formulaText",
+  "formulaCanvas",
+  "formulaLegendCurrent",
+  "formulaLegendDefault",
+  "formulaInput",
+  "formulaScaleLow",
+  "formulaScaleHigh",
+  "formulaResetButton",
+  "formulaVariables",
+  "formulaExplanation",
+  "floatingPet",
+  "petAvatar",
+  "petBubble",
+  "rawCanvas",
+  "normCanvas",
+  "badCanvas",
+  "lscCanvas",
+  "demosaicCanvas",
+  "wbCanvas",
+  "ccmCanvas",
+  "denoiseCanvas",
+  "sharpenCanvas",
+  "toneCanvas"
+]) {
+  assert.ok(index.includes(id), `index.html missing UI id: ${id}`);
+}
+
+for (const scene of ["colorChart", "lowLight", "vignette", "badPixels", "grayscale", "highContrast"]) {
+  assert.ok(core.includes(scene), `Missing sample scene: ${scene}`);
+  assert.ok(demoCases.includes(scene), `Missing demo scene mapping: ${scene}`);
+}
+
+for (const thumbnail of ["color-chart.png", "low-light.png", "vignette.png", "bad-pixels.png", "grayscale-ramp.png", "high-contrast.png"]) {
+  assert.ok(demoCases.includes(thumbnail), `Missing demo thumbnail mapping: ${thumbnail}`);
+}
+
+for (const symbol of ["runIspPipeline", "correctBadPixels", "applyLensShadingCorrection", "denoiseRgb", "sharpenRgb", "computeHistogram"]) {
+  assert.ok(core.includes(symbol), `Missing ISP symbol: ${symbol}`);
+}
+
+for (const symbol of ["renderStage", "drawHistogram", "autoWbButton", "autoExposureButton", "toBlob"]) {
+  assert.ok(app.includes(symbol), `Missing app behavior: ${symbol}`);
+}
+
+for (const stage of ["raw", "norm", "bad", "lsc", "demosaic", "wb", "ccm", "denoise", "sharpen", "tone"]) {
+  assert.ok(tutorial.includes(`key: "${stage}"`), `Missing tutorial stage: ${stage}`);
+}
+
+assert.ok(app.includes("getTutorialSteps"), "App does not load localized tutorial steps");
+assert.ok(app.includes("getTutorialLabels"), "App does not load localized tutorial labels");
+assert.ok(app.includes("getDemoCases"), "App does not load localized demo cases");
+assert.ok(app.includes("setLanguage"), "App missing language switch behavior");
+assert.ok(app.includes("rawIspRgbLanguage"), "App missing persisted language preference");
+assert.ok(app.includes("renderDemoGallery"), "App missing demo gallery rendering");
+assert.ok(app.includes("applyTutorialTip"), "App missing tutorial tip behavior");
+assert.ok(app.includes("completedTutorialStages"), "App missing tutorial progress tracking");
+assert.ok(app.includes("coachGotItButton"), "App missing got-it behavior");
+assert.ok(app.includes("reactMascot"), "App missing mascot reaction behavior");
+assert.ok(app.includes("movePetNear"), "App missing floating pet movement behavior");
+assert.ok(app.includes("petAvatar"), "App missing floating pet avatar behavior");
+assert.ok(app.includes("pointermove"), "App missing mascot pointer interaction");
+assert.ok(app.includes("CONTROL_HINTS"), "App missing control-level mascot explanations");
+assert.ok(app.includes("getFormulaContent"), "App missing formula content loading");
+assert.ok(app.includes("drawFormulaDiagram"), "App missing interactive formula diagram rendering");
+assert.ok(app.includes("formulaInput"), "App missing formula slider interaction");
+assert.ok(app.includes("formulaResetButton"), "App missing formula reset interaction");
+assert.ok(app.includes("devicePixelRatio"), "Formula canvas missing high-DPI rendering");
+assert.ok(app.includes("setMascotExpression"), "App missing mascot expression controller");
+assert.ok(app.includes("expr-surprised"), "App missing expressive mascot states");
+assert.ok(!app.includes("fillText"), "Formula diagrams should keep text in HTML for crisp rendering");
+assert.ok(tutorial.includes("controlLabel"), "Tutorial labels missing control guidance");
+assert.ok(tutorial.includes("analogyLabel"), "Tutorial labels missing visual analogy guidance");
+assert.ok(tutorial.includes("mistakeLabel"), "Tutorial labels missing beginner trap guidance");
+assert.ok(tutorial.includes("bubble"), "Tutorial content missing speech bubbles");
+assert.ok(tutorial.includes("tapBubble"), "Tutorial content missing stage-click speech bubbles");
+assert.ok(tutorial.includes("tipBubble"), "Tutorial content missing Apply Tip speech bubbles");
+assert.ok(tutorial.includes("doneBubble"), "Tutorial content missing checkpoint speech bubbles");
+assert.ok(tutorial.includes("anchor"), "Tutorial content missing pet movement anchors");
+assert.ok(tutorial.includes("zhLabels"), "Tutorial content missing Chinese labels");
+assert.ok(tutorial.includes("getTutorialSteps"), "Tutorial content missing localized step getter");
+assert.ok(demoCases.includes("getDemoCases"), "Demo cases missing localized getter");
+assert.ok(demoCases.includes("色卡"), "Demo cases missing Chinese demo text");
+assert.ok(index.includes("pixel-3d"), "index.html missing 3D mascot structure");
+assert.ok(index.includes("pixel-arm"), "index.html missing articulated mascot limbs");
+assert.ok(index.includes("pixel-cheek"), "index.html missing cute mascot cheeks");
+assert.ok(index.includes("pixel-sparkle"), "index.html missing mascot sparkle expression");
+assert.ok(index.includes("formula-lab"), "index.html missing interactive formula panel");
+assert.ok(index.includes("formula-legend"), "index.html missing current/default formula legend");
+assert.ok(app.includes("tapBubble || step.bubble"), "App missing richer stage-click mascot language");
+
+for (const stage of ["raw", "norm", "bad", "lsc", "demosaic", "wb", "ccm", "denoise", "sharpen", "tone"]) {
+  assert.ok(formulas.includes(`${stage}: {`), `Formula content missing stage: ${stage}`);
+}
+assert.ok(formulas.includes("getFormulaContent"), "Formula module missing getter");
+assert.ok(formulas.includes("variables"), "Formula module missing variable explanations");
+assert.ok(formulas.includes("interaction"), "Formula module missing interactive controls");
+assert.ok(formulas.includes("黑电平"), "Formula module missing Chinese formula explanation");
+
+console.log("QA structure checks passed.");

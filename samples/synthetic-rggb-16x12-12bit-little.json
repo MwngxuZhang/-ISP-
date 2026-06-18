@@ -1,0 +1,11 @@
+{
+  "file": "synthetic-rggb-16x12-12bit-little.raw",
+  "width": 16,
+  "height": 12,
+  "bitDepth": 12,
+  "endian": "little",
+  "bayerPattern": "RGGB",
+  "blackLevel": 64,
+  "whiteLevel": 4095,
+  "description": "Small unpacked 16-bit little-endian Bayer RAW sample with 12-bit values stored in uint16 words."
+}
