@@ -141,19 +141,20 @@ for (const stage of expectedTutorialStages) {
 assert.ok(getFormulaContent("norm", "zh").formula.includes("RAW - B"));
 assert.ok(getFormulaContent("ccm", "en").formula.includes("M"));
 
-assert.equal(DEMO_CASES.length, 6);
+assert.equal(DEMO_CASES.length, 9);
 for (const demo of DEMO_CASES) {
   assert.ok(demo.id.length > 2);
   assert.ok(demo.title.length > 2);
-  assert.ok(demo.thumbnail.endsWith(".png"));
+  assert.ok(demo.thumbnail.endsWith(".png") || demo.thumbnail.endsWith(".svg"));
   assert.ok(Object.keys(SAMPLE_SCENES).includes(demo.scene));
 }
 
 const zhDemoCases = getDemoCases("zh");
-assert.equal(zhDemoCases.length, 6);
+assert.equal(zhDemoCases.length, 9);
 assert.equal(zhDemoCases[0].title, "色卡");
 assert.ok(zhDemoCases[0].description.includes("白平衡"));
 assert.ok(zhDemoCases.some((demo) => demo.focus.includes("降噪")));
+assert.ok(zhDemoCases.some((demo) => demo.scene === "portraitSkin"));
 
 for (const scene of Object.keys(SAMPLE_SCENES)) {
   const sceneRaw = generateSyntheticRaw(32, 24, 12, "RGGB", scene);

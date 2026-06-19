@@ -41,6 +41,9 @@
               <option value="badPixels">Bad pixels</option>
               <option value="grayscale">Grayscale ramp</option>
               <option value="highContrast">High contrast</option>
+              <option value="portraitSkin">Portrait skin</option>
+              <option value="nightStreet">Night street</option>
+              <option value="backlitWindow">Backlit window</option>
             </select>
           </label>
           <p id="sampleDescription" class="hint">Saturated color patches plus neutral patches for checking demosaic, white balance, and CCM.</p>
@@ -126,6 +129,37 @@
             <p id="demoIntro">Pick one image, then follow the guide from RAW to RGB.</p>
           </div>
           <div id="demoGallery" class="demo-gallery"></div>
+        </section>
+
+        <section class="maturity-section" aria-label="Open-source maturity dashboard">
+          <div>
+            <p class="eyebrow" id="maturityEyebrow">Open-source maturity</p>
+            <h2 id="maturityTitle">From portfolio demo to star-worthy project</h2>
+            <p id="maturityIntro">High-star projects are easy to try, easy to trust, and easy to contribute to. This dashboard shows what has been strengthened and what comes next.</p>
+          </div>
+          <div class="maturity-grid">
+            <article>
+              <strong id="maturityDemoTitle">Instant demo</strong>
+              <span id="maturityDemoText">Static web app, built-in scenes, no heavy install.</span>
+            </article>
+            <article>
+              <strong id="maturityTrustTitle">Trust signals</strong>
+              <span id="maturityTrustText">Core tests, QA checks, CI workflow, honest upload limits.</span>
+            </article>
+            <article>
+              <strong id="maturityDocsTitle">Docs system</strong>
+              <span id="maturityDocsText">User guide, technical design, roadmap, star gap analysis.</span>
+            </article>
+            <article>
+              <strong id="maturityCommunityTitle">Contribution path</strong>
+              <span id="maturityCommunityText">Issue templates, PR template, roadmap, good next steps.</span>
+            </article>
+          </div>
+          <div class="maturity-links">
+            <a href="./docs/GITHUB_STAR_GAP_ANALYSIS.zh-CN.md" target="_blank" id="maturityGapLink">Read gap analysis</a>
+            <a href="./docs/OPEN_SOURCE_GROWTH_PLAN.zh-CN.md" target="_blank" id="maturityGrowthLink">Open growth plan</a>
+            <a href="./ROADMAP.md" target="_blank" id="maturityRoadmapLink">View roadmap</a>
+          </div>
         </section>
 
         <nav id="pipelineRail" class="pipeline-rail" aria-label="ISP pipeline"></nav>
@@ -236,6 +270,16 @@
                   <p id="formulaResult" class="formula-result">Move the slider to see the principle.</p>
                   <dl id="formulaVariables" class="formula-variables"></dl>
                   <p id="formulaExplanation" class="formula-explanation">-</p>
+                </section>
+                <section class="code-lab" aria-label="Stage code walkthrough">
+                  <div class="formula-head">
+                    <p class="eyebrow" id="codeEyebrow">Code walkthrough</p>
+                    <h4 id="codeTitle">Where this stage lives in code</h4>
+                  </div>
+                  <p id="codePlain" class="formula-explanation">-</p>
+                  <dl id="codeSteps" class="code-steps"></dl>
+                  <pre class="code-snippet"><code id="codeSnippet"></code></pre>
+                  <p id="codeTry" class="formula-result">-</p>
                 </section>
               </div>
               <div class="coach-actions">

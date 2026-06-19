@@ -6,14 +6,23 @@ RAW ISP RGB Lab 是一个开源的 RAW -> ISP -> RGB 可视化学习与调参平
 
 在线体验：[https://mwngxuzhang.github.io/-ISP-/](https://mwngxuzhang.github.io/-ISP-/)
 
+## 为什么值得 Star？
+
+- 它是一个能直接在浏览器运行的紧凑 ISP 学习实验室。
+- 它把图像处理公式和真实可视化输出连接起来。
+- 它包含中英文文档、已测试演示案例、CI、贡献模板和公开路线图。
+- 它正在从教学工具成长为兼顾画质理解和 pipeline 流畅性分析的开源参考项目。
+
 ## 核心亮点
 
 - 完整 RAW -> ISP -> RGB 可视化 pipeline。
 - 覆盖 RAW、BLC、BPC、LSC、Demosaic、AWB、CCM、Denoise、Sharpen、Tone/Gamma。
 - 内置测试场景：色卡、低光、暗角、坏点、灰阶、高对比。
+- 新增手机影像学习场景：人像肤色、夜景街灯、逆光窗户。
 - 支持上传 PGM 和普通 RAW/BIN buffer，并手动填写元数据。
 - 支持实时调参、阶段预览、直方图、统计指标和最终 RGB 导出。
 - 每个阶段都有交互公式和清晰示意图。
+- 每个阶段都有代码讲解，包含源码文件、函数名、关键步骤和小段代码。
 - 3D 吉祥物提供新手友好的讲解和操作引导。
 - 支持中英文界面与中英文文档。
 - 新增 Performance Profiler：展示阶段耗时、内存估算、瓶颈识别和优化建议。
@@ -49,8 +58,10 @@ npm test
 - [使用指南](docs/USER_GUIDE.zh-CN.md)
 - [技术设计](docs/TECHNICAL_DESIGN.zh-CN.md)
 - [距离高星 GitHub 项目的差距分析](docs/GITHUB_STAR_GAP_ANALYSIS.zh-CN.md)
+- [开源成长计划](docs/OPEN_SOURCE_GROWTH_PLAN.zh-CN.md)
 - [项目理解](docs/PROJECT_UNDERSTANDING.zh-CN.md)
 - [开发计划](docs/DEVELOPMENT_PLAN.zh-CN.md)
+- [Roadmap](ROADMAP.md)
 - [教学助手项目理解](docs/EDUCATIONAL_ASSISTANT_UNDERSTANDING.zh-CN.md)
 - [教学助手技术设计](docs/EDUCATIONAL_ASSISTANT_TECHNICAL_DESIGN.zh-CN.md)
 - [教学助手开发计划](docs/EDUCATIONAL_ASSISTANT_DEVELOPMENT_PLAN.zh-CN.md)
@@ -61,11 +72,13 @@ npm test
 - [User guide](docs/USER_GUIDE.en.md)
 - [Technical design](docs/TECHNICAL_DESIGN.en.md)
 - [GitHub star gap analysis](docs/GITHUB_STAR_GAP_ANALYSIS.en.md)
+- [Open source growth plan](docs/OPEN_SOURCE_GROWTH_PLAN.en.md)
 
 ## 仓库结构
 
 ```text
 docs/                         项目文档
+.github/                      CI、Issue 模板和 PR 模板
 src/isp-core.js                ISP 算法、解析器和 profiler helper
 src/app.js                     浏览器 UI 逻辑
 src/styles.css                 页面样式
@@ -74,6 +87,7 @@ samples/                       已测试 RAW/PGM 样例
 tests/                         核心测试和 QA 检查
 scripts/static-server.mjs      本地静态服务
 index.html                     静态网页应用
+ROADMAP.md                     版本路线图
 ```
 
 ## 当前状态

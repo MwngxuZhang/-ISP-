@@ -9,6 +9,7 @@ RAW ISP RGB Lab processes Bayer RAW data through a visible camera pipeline and p
 - Image preview for every stage
 - Histogram and simple metrics for every stage
 - Interactive formulas and diagrams
+- Code walkthrough for each stage, including source function, key steps, and a small snippet
 - Mascot explanations, hints, and guided actions
 - The phone/camera module that each stage maps to
 
@@ -46,6 +47,9 @@ These cases run through the complete RAW -> ISP -> RGB path. They are not just s
 | Bad pixels | Bad-pixel correction | Move `Bad pixel threshold` and watch isolated dots |
 | Grayscale ramp | Neutrality, tone, clipping | Set WB to 1/1/1, change gamma |
 | High contrast | Highlight clipping and contrast | Lower exposure, change contrast |
+| Portrait skin | Skin tone, AWB, CCM, saturation | Compare WB and CCM presets before changing saturation |
+| Night street | Low-light exposure, denoise, color cast | Raise denoise gradually and watch lamp color |
+| Backlit window | Dynamic range, clipping, shadow readability | Lower exposure, then compare gamma and contrast |
 
 If the bad-pixel case seems not loaded, check three signals: the selector should show `Bad pixels`, the active demo card should be `Bad pixels`, and the `Bad pixels` readout should change. In this version, selecting from the dropdown loads the case immediately.
 

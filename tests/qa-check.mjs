@@ -13,13 +13,20 @@ const requiredFiles = [
   "CONTRIBUTING.md",
   "CONTRIBUTING.en.md",
   "CONTRIBUTING.zh-CN.md",
+  "ROADMAP.md",
+  ".github/workflows/ci.yml",
+  ".github/ISSUE_TEMPLATE/bug_report.md",
+  ".github/ISSUE_TEMPLATE/feature_request.md",
+  ".github/pull_request_template.md",
   "index.html",
   "package.json",
   "LICENSE",
   "src/isp-core.js",
   "src/app.js",
   "src/app-production-pipeline.js",
+  "src/code-walkthrough.js",
   "src/demo-cases.js",
+  "src/demo-cases-rich.js",
   "src/formula-content.js",
   "src/tutorial-content.js",
   "src/tutorial-content-pipeline.js",
@@ -31,6 +38,9 @@ const requiredFiles = [
   "assets/demos/bad-pixels.png",
   "assets/demos/grayscale-ramp.png",
   "assets/demos/high-contrast.png",
+  "assets/demos/portrait-skin.svg",
+  "assets/demos/night-street.svg",
+  "assets/demos/backlit-window.svg",
   "tests/run-tests.mjs",
   "scripts/static-server.mjs",
   "docs/USER_GUIDE.md",
@@ -41,6 +51,9 @@ const requiredFiles = [
   "docs/GITHUB_STAR_GAP_ANALYSIS.md",
   "docs/GITHUB_STAR_GAP_ANALYSIS.en.md",
   "docs/GITHUB_STAR_GAP_ANALYSIS.zh-CN.md",
+  "docs/OPEN_SOURCE_GROWTH_PLAN.md",
+  "docs/OPEN_SOURCE_GROWTH_PLAN.en.md",
+  "docs/OPEN_SOURCE_GROWTH_PLAN.zh-CN.md",
   "docs/DEVELOPMENT_PLAN.en.md",
   "docs/DEVELOPMENT_PLAN.zh-CN.md",
   "docs/PROJECT_UNDERSTANDING.en.md",
@@ -101,6 +114,10 @@ for (const id of [
   "demoIntro",
   "sampleSceneInput",
   "demoGallery",
+  "maturityTitle",
+  "maturityGapLink",
+  "maturityGrowthLink",
+  "maturityRoadmapLink",
   "autoWbButton",
   "autoExposureButton",
   "exportButton",
@@ -134,6 +151,11 @@ for (const id of [
   "formulaResetButton",
   "formulaVariables",
   "formulaExplanation",
+  "codeEyebrow",
+  "codeTitle",
+  "codeSteps",
+  "codeSnippet",
+  "codeTry",
   "profilerEyebrow",
   "profilerTitle",
   "profilerTotalTime",
@@ -158,12 +180,12 @@ for (const id of [
   assert.ok(index.includes(id), `index.html missing UI id: ${id}`);
 }
 
-for (const scene of ["colorChart", "lowLight", "vignette", "badPixels", "grayscale", "highContrast"]) {
+for (const scene of ["colorChart", "lowLight", "vignette", "badPixels", "grayscale", "highContrast", "portraitSkin", "nightStreet", "backlitWindow"]) {
   assert.ok(core.includes(scene), `Missing sample scene: ${scene}`);
   assert.ok(demoCases.includes(scene), `Missing demo scene mapping: ${scene}`);
 }
 
-for (const thumbnail of ["color-chart.png", "low-light.png", "vignette.png", "bad-pixels.png", "grayscale-ramp.png", "high-contrast.png"]) {
+for (const thumbnail of ["color-chart.png", "low-light.png", "vignette.png", "bad-pixels.png", "grayscale-ramp.png", "high-contrast.png", "portrait-skin.svg", "night-street.svg", "backlit-window.svg"]) {
   assert.ok(demoCases.includes(thumbnail), `Missing demo thumbnail mapping: ${thumbnail}`);
 }
 
@@ -195,6 +217,8 @@ assert.ok(app.includes("petAvatar"), "App missing floating pet avatar behavior")
 assert.ok(app.includes("pointermove"), "App missing mascot pointer interaction");
 assert.ok(app.includes("CONTROL_HINTS"), "App missing control-level mascot explanations");
 assert.ok(app.includes("getFormulaContent"), "App missing formula content loading");
+assert.ok(app.includes("getCodeWalkthrough"), "App missing per-stage code walkthrough loading");
+assert.ok(app.includes("updateCodeWalkthrough"), "App missing code walkthrough renderer");
 assert.ok(app.includes("profileIspPipeline"), "App missing pipeline performance profiler");
 assert.ok(app.includes("updateProfiler"), "App missing profiler UI rendering");
 assert.ok(app.includes("profilerSuggestions"), "App missing profiler optimization suggestions");
@@ -228,12 +252,19 @@ assert.ok(index.includes("pixel-arm"), "index.html missing articulated mascot li
 assert.ok(index.includes("pixel-cheek"), "index.html missing cute mascot cheeks");
 assert.ok(index.includes("pixel-sparkle"), "index.html missing mascot sparkle expression");
 assert.ok(index.includes("formula-lab"), "index.html missing interactive formula panel");
+assert.ok(index.includes("code-lab"), "index.html missing code walkthrough panel");
 assert.ok(index.includes("formula-legend"), "index.html missing current/default formula legend");
 assert.ok(index.includes("profiler-section"), "index.html missing performance profiler panel");
+assert.ok(index.includes("maturity-section"), "index.html missing open-source maturity section");
 assert.ok(index.includes("src/app-production-pipeline.js"), "index.html should load the cache-busted production app entry");
 assert.ok(app.includes("tapBubble || step.bubble"), "App missing richer stage-click mascot language");
 assert.ok(readFileSync(join(root, "docs/GITHUB_STAR_GAP_ANALYSIS.en.md"), "utf8").includes("Performance Profiler"), "Gap analysis should mention profiler upgrade");
 assert.ok(readFileSync(join(root, "docs/GITHUB_STAR_GAP_ANALYSIS.zh-CN.md"), "utf8").includes("高星"), "Chinese gap analysis should explain high-star gap");
+assert.ok(readFileSync(join(root, "docs/OPEN_SOURCE_GROWTH_PLAN.en.md"), "utf8").includes("High-star projects"), "Growth plan should explain high-star qualities");
+assert.ok(readFileSync(join(root, "ROADMAP.md"), "utf8").includes("0.1 Learning Stable"), "Roadmap missing 0.1 milestone");
+assert.ok(readFileSync(join(root, ".github/workflows/ci.yml"), "utf8").includes("npm test"), "CI should run npm test");
+assert.ok(readFileSync(join(root, "src/code-walkthrough.js"), "utf8").includes("generateSyntheticRaw"), "Code walkthrough should explain RAW code path");
+assert.ok(readFileSync(join(root, "docs/USER_GUIDE.zh-CN.md"), "utf8").includes("代码讲解"), "Chinese user guide should explain code walkthrough");
 
 for (const stage of ["raw", "norm", "bad", "lsc", "demosaic", "wb", "ccm", "denoise", "sharpen", "tone"]) {
   assert.ok(formulas.includes(`${stage}: {`), `Formula content missing stage: ${stage}`);

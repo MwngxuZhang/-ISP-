@@ -13,7 +13,8 @@
   rgbToImageData,
   runIspPipeline
 } from "./isp-core.js";
-import { demoCaseForScene, getDemoCases } from "./demo-cases.js";
+import { demoCaseForScene, getDemoCases } from "./demo-cases-rich.js";
+import { getCodeWalkthrough } from "./code-walkthrough.js";
 import { getFormulaContent } from "./formula-content.js";
 import { getTutorialLabels, getTutorialSteps, tutorialIndexForStage } from "./tutorial-content-pipeline.js";
 
@@ -29,12 +30,31 @@ const UI_TEXT = {
     guide: "Guide",
     demoHeading: "Choose a tested demo image",
     demoIntro: "Pick one image, then follow the guide from RAW to RGB.",
+    maturityEyebrow: "Open-source maturity",
+    maturityTitle: "From portfolio demo to star-worthy project",
+    maturityIntro: "High-star projects are easy to try, easy to trust, and easy to contribute to. This dashboard shows what has been strengthened and what comes next.",
+    maturityDemoTitle: "Instant demo",
+    maturityDemoText: "Static web app, built-in scenes, no heavy install.",
+    maturityTrustTitle: "Trust signals",
+    maturityTrustText: "Core tests, QA checks, CI workflow, honest upload limits.",
+    maturityDocsTitle: "Docs system",
+    maturityDocsText: "User guide, technical design, roadmap, star gap analysis.",
+    maturityCommunityTitle: "Contribution path",
+    maturityCommunityText: "Issue templates, PR template, roadmap, good next steps.",
+    maturityGapLink: "Read gap analysis",
+    maturityGrowthLink: "Open growth plan",
+    maturityRoadmapLink: "View roadmap",
     formulaEyebrow: "Interactive formula",
     formulaCurrent: "Current value",
     formulaDefault: "Default value",
     formulaReset: "Reset formula",
     formulaResetDone: "Back to the default formula value. Now change it again slowly and watch how the current line leaves the gray reference.",
     formulaResult: (label, value, low, high, normalized) => `${label}: ${value}. ${Number(normalized) < 0.5 ? low : high}.`,
+    codeEyebrow: "Code walkthrough",
+    codeTitlePrefix: "Code path",
+    codeFile: "File",
+    codeFunction: "Function",
+    codeTry: "Try changing",
     profilerEyebrow: "Performance Profiler",
     profilerTitle: "Pipeline latency and memory insight",
     profilerIntro: "Measure every ISP stage, find bottlenecks, and turn the result into optimization actions.",
@@ -91,12 +111,31 @@ const UI_TEXT = {
     guide: "指南",
     demoHeading: "选择一张已测试演示图",
     demoIntro: "点选图片，然后跟随向导从 RAW 走到 RGB。",
+    maturityEyebrow: "开源成熟度",
+    maturityTitle: "从作品集 Demo 走向值得 Star 的项目",
+    maturityIntro: "高星项目通常容易尝试、容易信任、容易贡献。这里展示当前已补强的部分和下一步路线。",
+    maturityDemoTitle: "即开即用 Demo",
+    maturityDemoText: "静态网页、内置场景、不需要复杂安装。",
+    maturityTrustTitle: "可信信号",
+    maturityTrustText: "核心测试、QA 检查、CI workflow、诚实说明上传限制。",
+    maturityDocsTitle: "文档体系",
+    maturityDocsText: "用户指南、技术设计、路线图、高星差距分析。",
+    maturityCommunityTitle: "贡献路径",
+    maturityCommunityText: "Issue 模板、PR 模板、路线图和清晰下一步。",
+    maturityGapLink: "查看差距分析",
+    maturityGrowthLink: "查看成长计划",
+    maturityRoadmapLink: "查看路线图",
     formulaEyebrow: "交互公式",
     formulaCurrent: "当前值",
     formulaDefault: "默认值",
     formulaReset: "复位公式",
     formulaResetDone: "已经回到默认公式值。现在再慢慢拖动，观察彩色当前线如何离开灰色参考线。",
     formulaResult: (label, value, low, high, normalized) => `${label}：${value}。${Number(normalized) < 0.5 ? low : high}。`,
+    codeEyebrow: "代码讲解",
+    codeTitlePrefix: "代码路径",
+    codeFile: "文件",
+    codeFunction: "函数",
+    codeTry: "可以试着修改",
     profilerEyebrow: "性能分析器",
     profilerTitle: "Pipeline 延迟与内存洞察",
     profilerIntro: "测量每个 ISP 阶段，定位瓶颈，并把结果转化为可执行优化动作。",
@@ -273,6 +312,20 @@ const els = {
   sampleScene: document.querySelector("#sampleSceneInput"),
   sampleDescription: document.querySelector("#sampleDescription"),
   demoGallery: document.querySelector("#demoGallery"),
+  maturityEyebrow: document.querySelector("#maturityEyebrow"),
+  maturityTitle: document.querySelector("#maturityTitle"),
+  maturityIntro: document.querySelector("#maturityIntro"),
+  maturityDemoTitle: document.querySelector("#maturityDemoTitle"),
+  maturityDemoText: document.querySelector("#maturityDemoText"),
+  maturityTrustTitle: document.querySelector("#maturityTrustTitle"),
+  maturityTrustText: document.querySelector("#maturityTrustText"),
+  maturityDocsTitle: document.querySelector("#maturityDocsTitle"),
+  maturityDocsText: document.querySelector("#maturityDocsText"),
+  maturityCommunityTitle: document.querySelector("#maturityCommunityTitle"),
+  maturityCommunityText: document.querySelector("#maturityCommunityText"),
+  maturityGapLink: document.querySelector("#maturityGapLink"),
+  maturityGrowthLink: document.querySelector("#maturityGrowthLink"),
+  maturityRoadmapLink: document.querySelector("#maturityRoadmapLink"),
   width: document.querySelector("#widthInput"),
   height: document.querySelector("#heightInput"),
   bitDepth: document.querySelector("#bitDepthInput"),
@@ -341,6 +394,12 @@ const els = {
   formulaResult: document.querySelector("#formulaResult"),
   formulaVariables: document.querySelector("#formulaVariables"),
   formulaExplanation: document.querySelector("#formulaExplanation"),
+  codeEyebrow: document.querySelector("#codeEyebrow"),
+  codeTitle: document.querySelector("#codeTitle"),
+  codePlain: document.querySelector("#codePlain"),
+  codeSteps: document.querySelector("#codeSteps"),
+  codeSnippet: document.querySelector("#codeSnippet"),
+  codeTry: document.querySelector("#codeTry"),
   profilerEyebrow: document.querySelector("#profilerEyebrow"),
   profilerTitle: document.querySelector("#profilerTitle"),
   profilerIntro: document.querySelector("#profilerIntro"),
@@ -471,6 +530,22 @@ function refreshStaticText() {
   els.presetButton.textContent = text("presetJson");
   els.demoHeading.textContent = text("demoHeading");
   els.demoIntro.textContent = text("demoIntro");
+  els.maturityEyebrow.textContent = text("maturityEyebrow");
+  els.maturityTitle.textContent = text("maturityTitle");
+  els.maturityIntro.textContent = text("maturityIntro");
+  els.maturityDemoTitle.textContent = text("maturityDemoTitle");
+  els.maturityDemoText.textContent = text("maturityDemoText");
+  els.maturityTrustTitle.textContent = text("maturityTrustTitle");
+  els.maturityTrustText.textContent = text("maturityTrustText");
+  els.maturityDocsTitle.textContent = text("maturityDocsTitle");
+  els.maturityDocsText.textContent = text("maturityDocsText");
+  els.maturityCommunityTitle.textContent = text("maturityCommunityTitle");
+  els.maturityCommunityText.textContent = text("maturityCommunityText");
+  els.maturityGapLink.textContent = text("maturityGapLink");
+  els.maturityGrowthLink.textContent = text("maturityGrowthLink");
+  els.maturityRoadmapLink.textContent = text("maturityRoadmapLink");
+  els.maturityGapLink.href = currentLanguage === "zh" ? "./docs/GITHUB_STAR_GAP_ANALYSIS.zh-CN.md" : "./docs/GITHUB_STAR_GAP_ANALYSIS.en.md";
+  els.maturityGrowthLink.href = currentLanguage === "zh" ? "./docs/OPEN_SOURCE_GROWTH_PLAN.zh-CN.md" : "./docs/OPEN_SOURCE_GROWTH_PLAN.en.md";
   els.profilerEyebrow.textContent = text("profilerEyebrow");
   els.profilerTitle.textContent = text("profilerTitle");
   els.profilerIntro.textContent = text("profilerIntro");
@@ -848,6 +923,32 @@ function updateFormulaLab(step) {
   updateFormulaResult(content, Number(els.formulaInput.value));
 }
 
+function updateCodeWalkthrough(step) {
+  const content = getCodeWalkthrough(step.key, currentLanguage);
+  els.codeEyebrow.textContent = text("codeEyebrow");
+  els.codeTitle.textContent = `${text("codeTitlePrefix")}: ${content.title}`;
+  els.codePlain.textContent = content.plain;
+  els.codeSnippet.textContent = content.snippet;
+  els.codeTry.textContent = `${text("codeTry")}: ${content.try}`;
+  els.codeSteps.innerHTML = "";
+
+  const metaRows = [
+    [text("codeFile"), content.file],
+    [text("codeFunction"), content.functionName]
+  ];
+  for (const [label, value] of metaRows) {
+    const row = document.createElement("div");
+    row.innerHTML = `<dt>${label}</dt><dd><code>${value}</code></dd>`;
+    els.codeSteps.append(row);
+  }
+
+  content.steps.forEach((value, index) => {
+    const row = document.createElement("div");
+    row.innerHTML = `<dt>${index + 1}</dt><dd>${value}</dd>`;
+    els.codeSteps.append(row);
+  });
+}
+
 function applyFormulaToPipeline(stageKey, value, content) {
   currentHeroStage = stageKey;
   const min = Number(content.interaction.min);
@@ -947,6 +1048,7 @@ function updateTutorial(key = currentHeroStage) {
   els.coachCheckpoint.textContent = step.checkpoint;
   els.coachBubble.textContent = step.bubble;
   updateFormulaLab(step);
+  updateCodeWalkthrough(step);
   els.coachProgressBar.style.width = `${progressPercent}%`;
   els.coachProgressText.textContent = `${completedCount} / ${tutorialSteps.length} ${tutorialLabels.progressSuffix}`;
   els.coachPrevButton.disabled = currentTutorialIndex === 0;

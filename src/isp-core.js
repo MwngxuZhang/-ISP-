@@ -31,6 +31,18 @@ export const SAMPLE_SCENES = {
   highContrast: {
     name: "High contrast",
     description: "Bright and dark blocks for studying clipping, contrast, and gamma."
+  },
+  portraitSkin: {
+    name: "Portrait skin",
+    description: "Face-like tones for studying white balance, CCM, saturation, and skin rendering."
+  },
+  nightStreet: {
+    name: "Night street",
+    description: "Dark scene with colored lamps for studying exposure, denoise, color cast, and tone mapping."
+  },
+  backlitWindow: {
+    name: "Backlit window",
+    description: "Bright window plus dark subject for studying dynamic range, clipping, and local contrast tradeoffs."
   }
 };
 
@@ -77,6 +89,41 @@ function sceneRgb(scene, nx, ny) {
     const value = checker ? 0.92 : 0.08;
     const highlight = Math.hypot(nx - 0.78, ny - 0.25) < 0.12 ? 1 : value;
     return [highlight, highlight * 0.92, highlight * 0.78];
+  }
+
+  if (scene === "portraitSkin") {
+    const face = Math.max(0, 1 - Math.hypot(nx - 0.5, ny - 0.48) / 0.28);
+    const cheek = Math.max(0, 1 - Math.hypot(nx - 0.4, ny - 0.52) / 0.09) + Math.max(0, 1 - Math.hypot(nx - 0.6, ny - 0.52) / 0.09);
+    const background = 0.22 + 0.24 * ny;
+    return [
+      background * 0.65 + face * 0.78 + cheek * 0.08,
+      background * 0.78 + face * 0.52 + cheek * 0.02,
+      background + face * 0.38
+    ];
+  }
+
+  if (scene === "nightStreet") {
+    const sky = 0.025 + 0.08 * (1 - ny);
+    const lampA = Math.max(0, 1 - Math.hypot(nx - 0.28, ny - 0.28) / 0.16);
+    const lampB = Math.max(0, 1 - Math.hypot(nx - 0.72, ny - 0.38) / 0.18);
+    const road = ny > 0.62 ? 0.12 + 0.18 * nx : sky;
+    return [
+      road + lampA * 0.95 + lampB * 0.35,
+      road + lampA * 0.62 + lampB * 0.5,
+      sky + road * 0.7 + lampB * 0.95
+    ];
+  }
+
+  if (scene === "backlitWindow") {
+    const windowHit = nx > 0.58 && nx < 0.9 && ny > 0.14 && ny < 0.58;
+    const subject = Math.max(0, 1 - Math.hypot(nx - 0.38, ny - 0.55) / 0.26);
+    const room = 0.1 + 0.2 * (1 - ny);
+    const windowValue = windowHit ? 1.15 : 0;
+    return [
+      room + windowValue + subject * 0.36,
+      room + windowValue * 0.95 + subject * 0.3,
+      room * 1.1 + windowValue * 0.8 + subject * 0.24
+    ];
   }
 
   const patch = Math.floor(nx * 4) + Math.floor(ny * 3) * 4;
