@@ -324,6 +324,126 @@ output {
   background: var(--accent);
 }
 
+.profiler-section {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 12px;
+  border: 1px solid #bfd2dc;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.profiler-head {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(260px, 420px);
+  gap: 12px;
+  align-items: start;
+}
+
+.profiler-head h2,
+.profiler-body h3 {
+  margin: 0;
+  color: #26323a;
+}
+
+.profiler-head h2 {
+  margin-top: 2px;
+  font-size: 17px;
+}
+
+.profiler-head p {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.profiler-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.profiler-summary div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid #d5e1e7;
+  border-radius: 6px;
+  background: #f7fbfc;
+}
+
+.profiler-summary span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.profiler-summary strong {
+  overflow: hidden;
+  color: var(--accent-dark);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profiler-body {
+  display: grid;
+  grid-template-columns: minmax(300px, 1.2fr) minmax(260px, .8fr);
+  gap: 12px;
+}
+
+.profiler-body h3 {
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.profiler-bars {
+  display: grid;
+  gap: 7px;
+}
+
+.profiler-bar-row {
+  display: grid;
+  grid-template-columns: minmax(84px, 130px) 1fr minmax(60px, auto);
+  gap: 8px;
+  align-items: center;
+  color: #33434c;
+  font-size: 11px;
+}
+
+.profiler-track {
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e1e9ee;
+}
+
+.profiler-track i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #176b87, #2f855a);
+}
+
+.profiler-time {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.profiler-suggestions {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.42;
+}
+
 .hero-stage {
   position: relative;
   display: grid;
@@ -1270,6 +1390,11 @@ canvas {
   .hero-stage {
     grid-template-columns: 1fr;
   }
+
+  .profiler-head,
+  .profiler-body {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 640px) {
@@ -1302,6 +1427,14 @@ canvas {
 
   .demo-gallery {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .profiler-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .profiler-bar-row {
+    grid-template-columns: 82px 1fr 58px;
   }
 
   .pipeline-rail button::after {

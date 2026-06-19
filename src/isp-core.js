@@ -451,6 +451,67 @@ export function runIspPipeline(raw, options = {}) {
   };
 }
 
+export function profileIspPipeline(raw, options = {}, now = () => performance.now()) {
+  const blackLevel = options.blackLevel ?? raw.blackLevel ?? 0;
+  const whiteLevel = options.whiteLevel ?? raw.whiteLevel ?? ((1 << (raw.bitDepth ?? 12)) - 1);
+  const pattern = options.bayerPattern ?? raw.bayerPattern ?? "RGGB";
+  const timings = [];
+
+  function measure(key, label, fn) {
+    const start = now();
+    const value = fn();
+    const duration = Math.max(0, now() - start);
+    timings.push({ key, label, duration });
+    return value;
+  }
+
+  const normalized = measure("norm", "BLC / Normalize", () => normalizeRaw(raw.data, blackLevel, whiteLevel));
+  const badPixel = measure("bad", "BPC", () => correctBadPixels(normalized, raw.width, raw.height, pattern, options.badPixelThreshold ?? 0));
+  const lensShaded = measure("lsc", "LSC", () => applyLensShadingCorrection(badPixel.data, raw.width, raw.height, options.lensShadingStrength ?? 0));
+  const demosaiced = measure("demosaic", "Demosaic", () => demosaicBilinear(lensShaded, raw.width, raw.height, pattern));
+  const whiteBalanced = measure("wb", "AWB gains", () => applyWhiteBalance(demosaiced, options.whiteBalance ?? { red: 1, green: 1, blue: 1 }));
+  const colorCorrected = measure("ccm", "CCM", () => applyColorCorrection(whiteBalanced, options.ccm ?? CCM_PRESETS.identity));
+  const denoised = measure("denoise", "Denoise", () => denoiseRgb(colorCorrected, raw.width, raw.height, options.denoiseStrength ?? 0));
+  const sharpened = measure("sharpen", "Sharpen", () => sharpenRgb(denoised, raw.width, raw.height, options.sharpenAmount ?? 0));
+  const toneMapped = measure("tone-map", "Tone map", () => applyCreativeTone(sharpened, {
+    exposure: options.exposure ?? 0,
+    contrast: options.contrast ?? 1,
+    saturation: options.saturation ?? 1
+  }));
+  const finalRgb = measure("gamma", "Gamma / Output", () => applyGamma(toneMapped, options.gamma ?? 2.2));
+
+  const rawBytes = raw.data.byteLength ?? raw.data.length * (raw.bitDepth <= 8 ? 1 : 2);
+  const rawFloatBuffers = normalized.byteLength + badPixel.data.byteLength + lensShaded.byteLength;
+  const rgbFloatBuffers = demosaiced.byteLength + whiteBalanced.byteLength + colorCorrected.byteLength +
+    denoised.byteLength + sharpened.byteLength + toneMapped.byteLength + finalRgb.byteLength;
+  const canvasBytes = raw.width * raw.height * 4 * 11;
+  const memoryBytes = rawBytes + rawFloatBuffers + rgbFloatBuffers + canvasBytes;
+  const totalDuration = timings.reduce((sum, item) => sum + item.duration, 0);
+
+  return {
+    result: {
+      normalized,
+      badPixelCorrected: badPixel.data,
+      badPixelCount: badPixel.count,
+      lensShaded,
+      demosaiced,
+      whiteBalanced,
+      colorCorrected,
+      denoised,
+      sharpened,
+      toneMapped,
+      finalRgb
+    },
+    profile: {
+      totalDuration,
+      timings,
+      memoryBytes,
+      pixelCount: raw.width * raw.height,
+      megapixels: raw.width * raw.height / 1_000_000
+    }
+  };
+}
+
 export function rawToImageData(mosaic, width, height, pattern = "RGGB", colorize = true) {
   const image = new ImageData(width, height);
   for (let y = 0; y < height; y += 1) {

@@ -1,82 +1,81 @@
-# Learning ISP? Me Is All You Need
+# RAW ISP RGB Lab
 
-**Project:** RAW-to-RGB ISP Lab  
-**Version:** `0.0.0`
+RAW ISP RGB Lab is an open-source visual learning and tuning platform for understanding the full path from sensor Bayer RAW to display-ready RGB.
 
-RAW-to-RGB ISP Lab is an open-source visual learning app for understanding the complete image signal processing path:
+It is designed for image engineering beginners, ISP learners, and portfolio presentation. The project runs as a static web app, includes tested demo scenes, and explains each ISP stage with previews, histograms, formulas, and guided interactions.
 
-`RAW Bayer -> black level -> bad pixel correction -> lens shading -> demosaic -> white balance -> CCM -> denoise -> sharpen -> RGB`
+Online demo: [https://mwngxuzhang.github.io/-ISP-/](https://mwngxuzhang.github.io/-ISP-/)
 
-## Try It Online
+## Highlights
 
-If GitHub Pages is enabled, open:
+- Complete RAW -> ISP -> RGB visual pipeline.
+- Stages: RAW, BLC, BPC, LSC, Demosaic, AWB, CCM, Denoise, Sharpen, Tone/Gamma.
+- Built-in tested scenes: color chart, low light, vignette, bad pixels, grayscale ramp, high contrast.
+- Upload support for PGM and plain RAW/BIN buffers with manual metadata.
+- Real-time tuning with stage previews, histograms, metrics, and final RGB export.
+- Interactive formulas and crisp diagrams for each stage.
+- 3D mascot guide with beginner-friendly explanations.
+- English/Chinese UI and documentation.
+- Performance Profiler for stage latency, memory estimate, bottleneck detection, and optimization suggestions.
 
-[https://mwngxuzhang.github.io/-ISP-/](https://mwngxuzhang.github.io/-ISP-/)
+## Quick Start
 
-If the page is not live yet, open the repository settings and use:
-
-- Source: `Deploy from a branch`
-- Branch: `gh-pages`
-- Folder: `/root`
-
-## Download And Use
-
-### Option 1: Download ZIP
-
-1. Open [https://github.com/MwngxuZhang/-ISP-](https://github.com/MwngxuZhang/-ISP-)
-2. Click the green **Code** button
-3. Click **Download ZIP**
-4. Unzip it and open `index.html`
-
-### Option 2: Clone
-
-```bash
-git clone https://github.com/MwngxuZhang/-ISP-.git
-cd -ISP-
-```
-
-Open:
-
-```text
-index.html
-```
-
-Or run a local static server:
+Open `index.html` directly, or run a local static server:
 
 ```bash
 npm run start
 ```
 
-Then visit:
+Then open:
 
 ```text
 http://127.0.0.1:4173
 ```
 
-## What You Can Learn
-
-- Run six tested demo images through the complete RAW -> ISP -> RGB pipeline
-- Load small `.pgm` and `.raw` files for RAW input experiments
-- Adjust black level, white level, BPC, LSC, WB, CCM, exposure, gamma, denoise, and sharpen in real time
-- See every stage as an image preview, histogram, metric panel, and interactive formula
-- Use formula sliders that sync into the real ISP pipeline, so the diagram and real case image change together
-- See where each stage sits in a production phone/camera pipeline, including sensor front-end, BPC, LSC, AWB, CCM, denoise, sharpen, and tone mapping
-- Learn with an animated mascot that explains each step in beginner-friendly language
-- Switch the web UI between English and Chinese
-- Export the final PNG and ISP preset JSON
-
-## Documentation
-
-- [中文 README](README.zh-CN.md)
-- [User guide](docs/USER_GUIDE.en.md)
-- [中文使用指南](docs/USER_GUIDE.zh-CN.md)
-- [Technical design](docs/TECHNICAL_DESIGN.en.md)
-- [技术设计](docs/TECHNICAL_DESIGN.zh-CN.md)
-
-## Tests
+Run tests:
 
 ```bash
 npm test
 ```
 
-The current release passes the core ISP tests and QA structure checks.
+## Why This Project Is Useful
+
+Many ISP tutorials explain formulas in isolation. This project connects formulas to visible image changes. You can load a scene, adjust one control, and immediately observe how the RAW data, intermediate stages, histogram, metrics, and final RGB output change.
+
+The new Performance Profiler also turns the pipeline into a small fluency-analysis workload. It measures stage-level latency, estimates memory, identifies bottlenecks, and suggests practical optimization actions such as worker offloading, incremental recomputation, buffer reuse, and downsampled preview.
+
+## Documentation
+
+- [User guide](docs/USER_GUIDE.en.md)
+- [Technical design](docs/TECHNICAL_DESIGN.en.md)
+- [GitHub star gap analysis](docs/GITHUB_STAR_GAP_ANALYSIS.en.md)
+- [Project understanding](docs/PROJECT_UNDERSTANDING.en.md)
+- [Development plan](docs/DEVELOPMENT_PLAN.en.md)
+- [Educational assistant understanding](docs/EDUCATIONAL_ASSISTANT_UNDERSTANDING.en.md)
+- [Educational assistant technical design](docs/EDUCATIONAL_ASSISTANT_TECHNICAL_DESIGN.en.md)
+- [Educational assistant development plan](docs/EDUCATIONAL_ASSISTANT_DEVELOPMENT_PLAN.en.md)
+
+Chinese documentation:
+
+- [中文 README](README.zh-CN.md)
+- [使用指南](docs/USER_GUIDE.zh-CN.md)
+- [技术设计](docs/TECHNICAL_DESIGN.zh-CN.md)
+- [距离高星 GitHub 项目的差距分析](docs/GITHUB_STAR_GAP_ANALYSIS.zh-CN.md)
+
+## Repository Map
+
+```text
+docs/                         Project documentation
+src/isp-core.js                ISP algorithms, parsers, and profiler helpers
+src/app.js                     Browser UI logic
+src/styles.css                 Application styling
+assets/demos/                  Demo thumbnails
+samples/                       Small tested RAW/PGM samples
+tests/                         Core and QA checks
+scripts/static-server.mjs      Local static server
+index.html                     Static web application
+```
+
+## Current Status
+
+This is an educational and experimental ISP reference, not a production camera pipeline. The code favors clarity and inspectability. Future work includes real RAW/DNG metadata support, more demosaic algorithms, quality metrics, worker/WASM acceleration, and exported performance reports.

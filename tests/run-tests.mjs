@@ -14,6 +14,7 @@ import {
   normalizeRaw,
   parseBinaryRaw,
   parsePgm,
+  profileIspPipeline,
   runIspPipeline,
   SAMPLE_SCENES
 } from "../src/isp-core.js";
@@ -71,6 +72,27 @@ assert.equal(pipeline.badPixelCorrected.length, 32 * 24);
 assert.equal(pipeline.lensShaded.length, 32 * 24);
 assert.equal(pipeline.denoised.length, 32 * 24 * 3);
 assert.equal(pipeline.sharpened.length, 32 * 24 * 3);
+
+let fakeNow = 0;
+const profiled = profileIspPipeline(raw, {
+  blackLevel: raw.blackLevel,
+  whiteLevel: raw.whiteLevel,
+  bayerPattern: "RGGB",
+  badPixelThreshold: 0.32,
+  lensShadingStrength: 0.2,
+  whiteBalance: { red: 2, green: 1, blue: 1.5 },
+  denoiseStrength: 0.1,
+  sharpenAmount: 0.25,
+  gamma: 2.2
+}, () => {
+  fakeNow += 1.5;
+  return fakeNow;
+});
+assert.equal(profiled.result.finalRgb.length, 32 * 24 * 3);
+assert.ok(profiled.profile.totalDuration > 0);
+assert.equal(profiled.profile.timings.length, 10);
+assert.ok(profiled.profile.memoryBytes > 0);
+assert.ok(profiled.profile.timings.some((item) => item.key === "demosaic"));
 
 const expectedTutorialStages = ["raw", "norm", "bad", "lsc", "demosaic", "wb", "ccm", "denoise", "sharpen", "tone"];
 assert.deepEqual(FORMULA_STAGE_KEYS, expectedTutorialStages);

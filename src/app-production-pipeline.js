@@ -8,6 +8,7 @@
   normalizeRaw,
   parseBinaryRaw,
   parsePgm,
+  profileIspPipeline,
   rawToImageData,
   rgbToImageData,
   runIspPipeline
@@ -34,6 +35,23 @@ const UI_TEXT = {
     formulaReset: "Reset formula",
     formulaResetDone: "Back to the default formula value. Now change it again slowly and watch how the current line leaves the gray reference.",
     formulaResult: (label, value, low, high, normalized) => `${label}: ${value}. ${Number(normalized) < 0.5 ? low : high}.`,
+    profilerEyebrow: "Performance Profiler",
+    profilerTitle: "Pipeline latency and memory insight",
+    profilerIntro: "Measure every ISP stage, find bottlenecks, and turn the result into optimization actions.",
+    profilerTotal: "Total time",
+    profilerMemory: "Estimated memory",
+    profilerBottleneck: "Top bottleneck",
+    profilerBreakdown: "Stage time breakdown",
+    profilerSuggestions: "Optimization suggestions",
+    profilerNoData: "Waiting for pipeline data.",
+    profilerTips: {
+      heavyStage: (name, percent) => `${name} takes ${percent}% of the pipeline. Move it to a worker or optimize this stage first.`,
+      highMemory: "Estimated buffers are high. Reuse intermediate arrays and keep only visible preview stages when running on mobile.",
+      highResolution: "Resolution is the main multiplier. Use downsampled preview for live tuning, then full resolution for export.",
+      denoise: "Denoise is active. Consider a lower preview strength, tiled processing, or a faster edge-preserving approximation.",
+      sharpen: "Sharpen is active. Cache the blurred image if denoise and sharpen share a blur pass.",
+      incremental: "Only recompute affected downstream stages after a slider change instead of rerunning the whole pipeline."
+    },
     finalRgb: "Final RGB",
     stageSuffix: "stage",
     rendered: (width, height, pattern, count) => `Rendered ${width}x${height} ${pattern} through ${count} ISP stages.`,
@@ -79,6 +97,23 @@ const UI_TEXT = {
     formulaReset: "复位公式",
     formulaResetDone: "已经回到默认公式值。现在再慢慢拖动，观察彩色当前线如何离开灰色参考线。",
     formulaResult: (label, value, low, high, normalized) => `${label}：${value}。${Number(normalized) < 0.5 ? low : high}。`,
+    profilerEyebrow: "性能分析器",
+    profilerTitle: "Pipeline 延迟与内存洞察",
+    profilerIntro: "测量每个 ISP 阶段，定位瓶颈，并把结果转化为可执行优化动作。",
+    profilerTotal: "总耗时",
+    profilerMemory: "估算内存",
+    profilerBottleneck: "最大瓶颈",
+    profilerBreakdown: "阶段耗时拆解",
+    profilerSuggestions: "优化建议",
+    profilerNoData: "等待 pipeline 数据。",
+    profilerTips: {
+      heavyStage: (name, percent) => `${name} 占 pipeline ${percent}%。优先考虑 Worker 异步化或优化该阶段。`,
+      highMemory: "估算 buffer 偏高。移动端可复用中间数组，并只保留当前可见预览阶段。",
+      highResolution: "分辨率是主要放大器。实时调参使用降采样预览，导出时再跑全分辨率。",
+      denoise: "降噪已启用。预览阶段可降低强度、分块处理，或使用更快的边缘保持近似算法。",
+      sharpen: "锐化已启用。如果降噪和锐化共享模糊操作，可以缓存 blur 结果。",
+      incremental: "滑块变化后只重算受影响的下游阶段，避免整条 pipeline 每次全部重跑。"
+    },
     finalRgb: "最终 RGB",
     stageSuffix: "阶段",
     rendered: (width, height, pattern, count) => `已完成 ${width}x${height} ${pattern}，共 ${count} 个 ISP 阶段。`,
@@ -306,6 +341,19 @@ const els = {
   formulaResult: document.querySelector("#formulaResult"),
   formulaVariables: document.querySelector("#formulaVariables"),
   formulaExplanation: document.querySelector("#formulaExplanation"),
+  profilerEyebrow: document.querySelector("#profilerEyebrow"),
+  profilerTitle: document.querySelector("#profilerTitle"),
+  profilerIntro: document.querySelector("#profilerIntro"),
+  profilerTotalLabel: document.querySelector("#profilerTotalLabel"),
+  profilerTotalTime: document.querySelector("#profilerTotalTime"),
+  profilerMemoryLabel: document.querySelector("#profilerMemoryLabel"),
+  profilerMemory: document.querySelector("#profilerMemory"),
+  profilerBottleneckLabel: document.querySelector("#profilerBottleneckLabel"),
+  profilerBottleneck: document.querySelector("#profilerBottleneck"),
+  profilerBreakdownTitle: document.querySelector("#profilerBreakdownTitle"),
+  profilerBars: document.querySelector("#profilerBars"),
+  profilerSuggestionTitle: document.querySelector("#profilerSuggestionTitle"),
+  profilerSuggestions: document.querySelector("#profilerSuggestions"),
   coachProgressBar: document.querySelector("#coachProgressBar"),
   coachProgressText: document.querySelector("#coachProgressText"),
   coachPrevButton: document.querySelector("#coachPrevButton"),
@@ -423,6 +471,14 @@ function refreshStaticText() {
   els.presetButton.textContent = text("presetJson");
   els.demoHeading.textContent = text("demoHeading");
   els.demoIntro.textContent = text("demoIntro");
+  els.profilerEyebrow.textContent = text("profilerEyebrow");
+  els.profilerTitle.textContent = text("profilerTitle");
+  els.profilerIntro.textContent = text("profilerIntro");
+  els.profilerTotalLabel.textContent = text("profilerTotal");
+  els.profilerMemoryLabel.textContent = text("profilerMemory");
+  els.profilerBottleneckLabel.textContent = text("profilerBottleneck");
+  els.profilerBreakdownTitle.textContent = text("profilerBreakdown");
+  els.profilerSuggestionTitle.textContent = text("profilerSuggestions");
   const languageControl = document.querySelector(".language-control");
   if (languageControl?.firstChild) {
     languageControl.firstChild.textContent = `${text("language")} `;
@@ -1129,13 +1185,77 @@ function renderRail() {
   els.pipelineRail.querySelector("button")?.classList.add("active");
 }
 
+function formatDuration(ms) {
+  if (!Number.isFinite(ms)) return "-";
+  return `${ms.toFixed(ms < 10 ? 2 : 1)} ms`;
+}
+
+function formatBytes(bytes) {
+  if (!Number.isFinite(bytes)) return "-";
+  const units = ["B", "KB", "MB", "GB"];
+  let value = bytes;
+  let unitIndex = 0;
+  while (value >= 1024 && unitIndex < units.length - 1) {
+    value /= 1024;
+    unitIndex += 1;
+  }
+  return `${value.toFixed(unitIndex === 0 ? 0 : 1)} ${units[unitIndex]}`;
+}
+
+function profilerSuggestions(profile, options, bottleneck) {
+  const tips = text("profilerTips");
+  const suggestions = [];
+  const total = profile.totalDuration || 1;
+  const bottleneckPercent = Math.round((bottleneck.duration / total) * 100);
+  suggestions.push(tips.heavyStage(bottleneck.label, bottleneckPercent));
+  if (profile.memoryBytes > 24 * 1024 * 1024) suggestions.push(tips.highMemory);
+  if (profile.megapixels > 0.02) suggestions.push(tips.highResolution);
+  if (options.denoiseStrength > 0.3) suggestions.push(tips.denoise);
+  if (options.sharpenAmount > 0.8) suggestions.push(tips.sharpen);
+  suggestions.push(tips.incremental);
+  return suggestions.slice(0, 4);
+}
+
+function updateProfiler(profile, options) {
+  if (!profile?.timings?.length) {
+    els.profilerBars.textContent = text("profilerNoData");
+    return;
+  }
+  const timings = [...profile.timings].sort((a, b) => b.duration - a.duration);
+  const bottleneck = timings[0];
+  const total = Math.max(0.001, profile.totalDuration);
+  els.profilerTotalTime.textContent = formatDuration(profile.totalDuration);
+  els.profilerMemory.textContent = formatBytes(profile.memoryBytes);
+  els.profilerBottleneck.textContent = `${bottleneck.label} (${Math.round((bottleneck.duration / total) * 100)}%)`;
+  els.profilerBars.innerHTML = "";
+
+  for (const item of profile.timings) {
+    const percent = Math.max(1, Math.round((item.duration / total) * 100));
+    const row = document.createElement("div");
+    row.className = "profiler-bar-row";
+    row.innerHTML = `
+      <span class="profiler-stage">${item.label}</span>
+      <span class="profiler-track"><i style="width:${percent}%"></i></span>
+      <span class="profiler-time">${formatDuration(item.duration)}</span>
+    `;
+    els.profilerBars.append(row);
+  }
+
+  els.profilerSuggestions.innerHTML = "";
+  for (const suggestion of profilerSuggestions(profile, options, bottleneck)) {
+    const item = document.createElement("li");
+    item.textContent = suggestion;
+    els.profilerSuggestions.append(item);
+  }
+}
+
 function render() {
   try {
     updateReadouts();
     const pattern = els.bayer.value;
     const options = currentOptions();
     const normalizedForRawPreview = normalizeRaw(currentRaw.data, options.blackLevel, options.whiteLevel);
-    const result = runIspPipeline({ ...currentRaw, bayerPattern: pattern }, options);
+    const { result, profile } = profileIspPipeline({ ...currentRaw, bayerPattern: pattern }, options);
     const gray = ["#d7dee4"];
     const rgb = ["#e45145", "#38a169", "#3b82f6"];
 
@@ -1159,6 +1279,7 @@ function render() {
     els.meanReadout.textContent = finalStats.map((s) => s.mean.toFixed(2)).join(" / ");
     els.badPixelReadout.textContent = String(result.badPixelCount);
     els.heroValues.textContent = `R ${finalStats[0].mean.toFixed(2)}  G ${finalStats[1].mean.toFixed(2)}  B ${finalStats[2].mean.toFixed(2)}`;
+    updateProfiler(profile, options);
     els.status.textContent = text("rendered")(currentRaw.width, currentRaw.height, pattern, stageDefs.length);
   } catch (error) {
     els.status.textContent = error.message;

@@ -130,6 +130,31 @@
 
         <nav id="pipelineRail" class="pipeline-rail" aria-label="ISP pipeline"></nav>
 
+        <section class="profiler-section" aria-label="Performance profiler">
+          <div class="profiler-head">
+            <div>
+              <p class="eyebrow" id="profilerEyebrow">Performance Profiler</p>
+              <h2 id="profilerTitle">Pipeline latency and memory insight</h2>
+              <p id="profilerIntro">Measure every ISP stage, find bottlenecks, and turn the result into optimization actions.</p>
+            </div>
+            <div class="profiler-summary" aria-label="Profiler summary">
+              <div><span id="profilerTotalLabel">Total time</span><strong id="profilerTotalTime">-</strong></div>
+              <div><span id="profilerMemoryLabel">Estimated memory</span><strong id="profilerMemory">-</strong></div>
+              <div><span id="profilerBottleneckLabel">Top bottleneck</span><strong id="profilerBottleneck">-</strong></div>
+            </div>
+          </div>
+          <div class="profiler-body">
+            <div>
+              <h3 id="profilerBreakdownTitle">Stage time breakdown</h3>
+              <div id="profilerBars" class="profiler-bars"></div>
+            </div>
+            <div>
+              <h3 id="profilerSuggestionTitle">Optimization suggestions</h3>
+              <ul id="profilerSuggestions" class="profiler-suggestions"></ul>
+            </div>
+          </div>
+        </section>
+
         <section class="hero-stage" aria-label="Final RGB preview">
           <canvas id="finalCanvas"></canvas>
           <div class="side-panel">

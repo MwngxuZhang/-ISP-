@@ -1,85 +1,81 @@
-# 学习 ISP？有我就够啦
+# RAW ISP RGB Lab
 
-**英文标题：** Learning ISP? Me Is All You Need  
-**项目：** RAW-to-RGB ISP Lab  
-**版本：** `0.0.0`
+RAW ISP RGB Lab 是一个开源的 RAW -> ISP -> RGB 可视化学习与调参平台，用来帮助图像工程初学者理解手机相机从 Bayer RAW 到最终 RGB 的完整处理链路。
 
-这是一个开源、可视化、适合初学者的 ISP 学习网页。它把完整相机图像流程拆成可以直接观察和调参的步骤：
+项目以静态网页形式运行，包含多组已测试演示场景，并用阶段预览、直方图、统计指标、交互公式和吉祥物讲解，把抽象 ISP 原理变成可观察、可操作的学习体验。
 
-`RAW Bayer -> 黑电平 -> 坏点校正 -> 镜头阴影校正 -> 去马赛克 -> 白平衡 -> CCM -> 降噪 -> 锐化 -> RGB`
+在线体验：[https://mwngxuzhang.github.io/-ISP-/](https://mwngxuzhang.github.io/-ISP-/)
 
-## 在线体验
+## 核心亮点
 
-如果 GitHub Pages 已启用，可以直接打开：
+- 完整 RAW -> ISP -> RGB 可视化 pipeline。
+- 覆盖 RAW、BLC、BPC、LSC、Demosaic、AWB、CCM、Denoise、Sharpen、Tone/Gamma。
+- 内置测试场景：色卡、低光、暗角、坏点、灰阶、高对比。
+- 支持上传 PGM 和普通 RAW/BIN buffer，并手动填写元数据。
+- 支持实时调参、阶段预览、直方图、统计指标和最终 RGB 导出。
+- 每个阶段都有交互公式和清晰示意图。
+- 3D 吉祥物提供新手友好的讲解和操作引导。
+- 支持中英文界面与中英文文档。
+- 新增 Performance Profiler：展示阶段耗时、内存估算、瓶颈识别和优化建议。
 
-[https://mwngxuzhang.github.io/-ISP-/](https://mwngxuzhang.github.io/-ISP-/)
+## 快速开始
 
-如果页面暂时打不开，请在 GitHub 仓库进入 **Settings -> Pages**，选择：
-
-- Source: `Deploy from a branch`
-- Branch: `gh-pages`
-- Folder: `/root`
-
-保存后等待 1-2 分钟，再打开上面的链接。
-
-## 下载使用
-
-### 方法 1：直接下载 ZIP
-
-1. 打开仓库页面：[https://github.com/MwngxuZhang/-ISP-](https://github.com/MwngxuZhang/-ISP-)
-2. 点击绿色 **Code** 按钮
-3. 点击 **Download ZIP**
-4. 解压后双击打开 `index.html`
-
-### 方法 2：Git 克隆
-
-```bash
-git clone https://github.com/MwngxuZhang/-ISP-.git
-cd -ISP-
-```
-
-然后直接打开：
-
-```text
-index.html
-```
-
-也可以启动本地静态服务器：
+可以直接打开 `index.html`，也可以启动本地静态服务：
 
 ```bash
 npm run start
 ```
 
-再访问：
+然后访问：
 
 ```text
 http://127.0.0.1:4173
 ```
 
-## 可以学习什么
-
-- 选择 6 张已测试演示图，完整跑 RAW -> ISP -> RGB
-- 上传小尺寸 `.pgm` / `.raw` 文件学习真实 RAW 输入
-- 实时调节黑电平、白电平、坏点阈值、LSC、白平衡、CCM、曝光、Gamma、降噪、锐化
-- 每一步都有可视化预览、直方图、指标和交互公式
-- 交互公式滑杆会同步真实 ISP 参数，让示意图和真实案例图一起变化
-- 每个阶段都标出它在手机/相机生产级 pipeline 中对应的模块，例如 Sensor Front-End、BPC、LSC、AWB、CCM、降噪、锐化和 Tone Mapping
-- 吉祥物会跟随步骤解释原理，适合初学者边看边学
-- 支持中英文界面切换
-- 可导出最终 PNG 和 ISP 参数 JSON
-
-## 文档
-
-- [English README](README.en.md)
-- [中文使用指南](docs/USER_GUIDE.zh-CN.md)
-- [English user guide](docs/USER_GUIDE.en.md)
-- [技术设计](docs/TECHNICAL_DESIGN.zh-CN.md)
-- [Technical design](docs/TECHNICAL_DESIGN.en.md)
-
-## 测试
+运行测试：
 
 ```bash
 npm test
 ```
 
-当前版本已经通过核心 ISP 算法测试和结构 QA 检查。
+## 项目价值
+
+很多 ISP 教程只讲公式，不容易看到图像实际变化。本项目把公式、参数、图像预览和直方图连接起来：你可以选择一个场景，只调一个参数，然后观察 RAW、中间阶段和最终 RGB 如何同步变化。
+
+新增的 Performance Profiler 还把 pipeline 变成一个小型流畅性分析负载：它会测量各阶段延迟、估算内存、识别瓶颈，并给出 Worker 异步化、增量重算、buffer 复用、降采样预览等优化建议。
+
+## 文档
+
+- [使用指南](docs/USER_GUIDE.zh-CN.md)
+- [技术设计](docs/TECHNICAL_DESIGN.zh-CN.md)
+- [距离高星 GitHub 项目的差距分析](docs/GITHUB_STAR_GAP_ANALYSIS.zh-CN.md)
+- [项目理解](docs/PROJECT_UNDERSTANDING.zh-CN.md)
+- [开发计划](docs/DEVELOPMENT_PLAN.zh-CN.md)
+- [教学助手项目理解](docs/EDUCATIONAL_ASSISTANT_UNDERSTANDING.zh-CN.md)
+- [教学助手技术设计](docs/EDUCATIONAL_ASSISTANT_TECHNICAL_DESIGN.zh-CN.md)
+- [教学助手开发计划](docs/EDUCATIONAL_ASSISTANT_DEVELOPMENT_PLAN.zh-CN.md)
+
+英文文档：
+
+- [English README](README.en.md)
+- [User guide](docs/USER_GUIDE.en.md)
+- [Technical design](docs/TECHNICAL_DESIGN.en.md)
+- [GitHub star gap analysis](docs/GITHUB_STAR_GAP_ANALYSIS.en.md)
+
+## 仓库结构
+
+```text
+docs/                         项目文档
+src/isp-core.js                ISP 算法、解析器和 profiler helper
+src/app.js                     浏览器 UI 逻辑
+src/styles.css                 页面样式
+assets/demos/                  演示图缩略图
+samples/                       已测试 RAW/PGM 样例
+tests/                         核心测试和 QA 检查
+scripts/static-server.mjs      本地静态服务
+index.html                     静态网页应用
+```
+
+## 当前状态
+
+这是一个教学型和实验型 ISP reference，不是生产级相机 pipeline。代码优先追求清晰、可读和便于学习。后续路线包括真实 RAW/DNG 元数据支持、更多 demosaic 算法、图像质量指标、Worker/WASM 加速和性能报告导出。

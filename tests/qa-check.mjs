@@ -38,6 +38,9 @@ const requiredFiles = [
   "docs/USER_GUIDE.zh-CN.md",
   "docs/TECHNICAL_DESIGN.en.md",
   "docs/TECHNICAL_DESIGN.zh-CN.md",
+  "docs/GITHUB_STAR_GAP_ANALYSIS.md",
+  "docs/GITHUB_STAR_GAP_ANALYSIS.en.md",
+  "docs/GITHUB_STAR_GAP_ANALYSIS.zh-CN.md",
   "docs/DEVELOPMENT_PLAN.en.md",
   "docs/DEVELOPMENT_PLAN.zh-CN.md",
   "docs/PROJECT_UNDERSTANDING.en.md",
@@ -131,6 +134,13 @@ for (const id of [
   "formulaResetButton",
   "formulaVariables",
   "formulaExplanation",
+  "profilerEyebrow",
+  "profilerTitle",
+  "profilerTotalTime",
+  "profilerMemory",
+  "profilerBottleneck",
+  "profilerBars",
+  "profilerSuggestions",
   "floatingPet",
   "petAvatar",
   "petBubble",
@@ -157,7 +167,7 @@ for (const thumbnail of ["color-chart.png", "low-light.png", "vignette.png", "ba
   assert.ok(demoCases.includes(thumbnail), `Missing demo thumbnail mapping: ${thumbnail}`);
 }
 
-for (const symbol of ["runIspPipeline", "correctBadPixels", "applyLensShadingCorrection", "denoiseRgb", "sharpenRgb", "computeHistogram"]) {
+for (const symbol of ["runIspPipeline", "profileIspPipeline", "correctBadPixels", "applyLensShadingCorrection", "denoiseRgb", "sharpenRgb", "computeHistogram"]) {
   assert.ok(core.includes(symbol), `Missing ISP symbol: ${symbol}`);
 }
 
@@ -185,6 +195,9 @@ assert.ok(app.includes("petAvatar"), "App missing floating pet avatar behavior")
 assert.ok(app.includes("pointermove"), "App missing mascot pointer interaction");
 assert.ok(app.includes("CONTROL_HINTS"), "App missing control-level mascot explanations");
 assert.ok(app.includes("getFormulaContent"), "App missing formula content loading");
+assert.ok(app.includes("profileIspPipeline"), "App missing pipeline performance profiler");
+assert.ok(app.includes("updateProfiler"), "App missing profiler UI rendering");
+assert.ok(app.includes("profilerSuggestions"), "App missing profiler optimization suggestions");
 assert.ok(app.includes("drawFormulaDiagram"), "App missing interactive formula diagram rendering");
 assert.ok(app.includes("formulaInput"), "App missing formula slider interaction");
 assert.ok(app.includes("formulaResetButton"), "App missing formula reset interaction");
@@ -216,8 +229,11 @@ assert.ok(index.includes("pixel-cheek"), "index.html missing cute mascot cheeks"
 assert.ok(index.includes("pixel-sparkle"), "index.html missing mascot sparkle expression");
 assert.ok(index.includes("formula-lab"), "index.html missing interactive formula panel");
 assert.ok(index.includes("formula-legend"), "index.html missing current/default formula legend");
+assert.ok(index.includes("profiler-section"), "index.html missing performance profiler panel");
 assert.ok(index.includes("src/app-production-pipeline.js"), "index.html should load the cache-busted production app entry");
 assert.ok(app.includes("tapBubble || step.bubble"), "App missing richer stage-click mascot language");
+assert.ok(readFileSync(join(root, "docs/GITHUB_STAR_GAP_ANALYSIS.en.md"), "utf8").includes("Performance Profiler"), "Gap analysis should mention profiler upgrade");
+assert.ok(readFileSync(join(root, "docs/GITHUB_STAR_GAP_ANALYSIS.zh-CN.md"), "utf8").includes("高星"), "Chinese gap analysis should explain high-star gap");
 
 for (const stage of ["raw", "norm", "bad", "lsc", "demosaic", "wb", "ccm", "denoise", "sharpen", "tone"]) {
   assert.ok(formulas.includes(`${stage}: {`), `Formula content missing stage: ${stage}`);
