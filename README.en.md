@@ -1,31 +1,41 @@
-# RAW ISP RGB Lab
+# PixelPipe ISP Lab
 
-RAW ISP RGB Lab is an open-source visual learning and tuning platform for understanding the full path from sensor Bayer RAW to display-ready RGB.
+Learn camera ISP from RAW to RGB, one pixel at a time.
 
-It is designed for image engineering beginners, ISP learners, and portfolio presentation. The project runs as a static web app, includes tested demo scenes, and explains each ISP stage with previews, histograms, formulas, and guided interactions.
+PixelPipe ISP Lab is an open-source visual learning lab for image engineers, ISP beginners, and portfolio projects. It turns the camera pipeline into something you can touch: choose a scene, move a slider, inspect each ISP stage, read the formula, and jump into the code behind the result.
 
-Online demo: [https://mwngxuzhang.github.io/-ISP-/](https://mwngxuzhang.github.io/-ISP-/)
+Live demo: [https://mwngxuzhang.github.io/-ISP-/](https://mwngxuzhang.github.io/-ISP-/)
 
 ## Why Star This Project?
 
-- It is a compact ISP learning lab that runs entirely in the browser.
-- It connects image-processing formulas with real visual output.
-- It includes bilingual docs, tested demo cases, CI, contribution templates, and a public roadmap.
-- It is evolving toward a practical reference for both image-quality intuition and pipeline fluency analysis.
+- It makes ISP visible: RAW data, intermediate stages, histograms, metrics, formulas, and final RGB are shown together.
+- It is beginner-friendly: the 3D learning assistant explains why each operation exists in a phone or camera pipeline.
+- It is hands-on: real-time controls update the actual demo image, not only symbolic diagrams.
+- It is readable: every major stage includes a compact source-code walkthrough.
+- It is portfolio-ready: bilingual docs, tested demo cases, CI, issue templates, roadmap, and open-source growth notes are included.
 
-## Highlights
+## What You Can Learn
+
+- RAW sensor structure and Bayer patterns.
+- Black level correction and why sensors need a baseline offset.
+- Bad pixel correction for sensor defects.
+- Lens shading correction for optical falloff.
+- Demosaic, white balance, color correction matrix, denoise, sharpen, tone mapping, and gamma.
+- How tuning controls change the image, the histogram, and stage metrics.
+- How a production camera pipeline can be broken into explainable modules.
+
+## Feature Highlights
 
 - Complete RAW -> ISP -> RGB visual pipeline.
 - Stages: RAW, BLC, BPC, LSC, Demosaic, AWB, CCM, Denoise, Sharpen, Tone/Gamma.
-- Built-in tested scenes: color chart, low light, vignette, bad pixels, grayscale ramp, high contrast.
-- Extra mobile-imaging scenes: portrait skin, night street, backlit window.
+- Tested built-in scenes: color chart, low light, vignette, bad pixels, grayscale ramp, high contrast, portrait skin, night street, backlit window.
 - Upload support for PGM and plain RAW/BIN buffers with manual metadata.
-- Real-time tuning with stage previews, histograms, metrics, and final RGB export.
-- Interactive formulas and crisp diagrams for each stage.
-- Per-stage code walkthrough with source file, function name, key steps, and a small snippet.
-- 3D mascot guide with beginner-friendly explanations.
-- English/Chinese UI and documentation.
-- Performance Profiler for stage latency, memory estimate, bottleneck detection, and optimization suggestions.
+- Real-time tuning controls with one-click reset.
+- Stage previews, histograms, image metrics, and final RGB export.
+- Interactive formulas with crisp SVG diagrams.
+- Per-stage code walkthrough with source file, function name, key steps, and snippet.
+- Bilingual English/Chinese UI and documentation.
+- Performance Profiler for stage latency, memory estimate, bottleneck hints, and optimization suggestions.
 
 ## Quick Start
 
@@ -47,11 +57,31 @@ Run tests:
 npm test
 ```
 
-## Why This Project Is Useful
+## How To Use It
 
-Many ISP tutorials explain formulas in isolation. This project connects formulas to visible image changes. You can load a scene, adjust one control, and immediately observe how the RAW data, intermediate stages, histogram, metrics, and final RGB output change.
+1. Open the live demo or local `index.html`.
+2. Choose a built-in scene such as Color Chart, Low Light, Bad Pixels, or Night Street.
+3. Click any ISP stage to see its preview, formula, code explanation, and learning notes.
+4. Adjust the controls. The real case image updates through the pipeline.
+5. Use reset when you want to return to the default teaching setup.
+6. Export the final RGB result or inspect the profiler panel.
 
-The new Performance Profiler also turns the pipeline into a small fluency-analysis workload. It measures stage-level latency, estimates memory, identifies bottlenecks, and suggests practical optimization actions such as worker offloading, incremental recomputation, buffer reuse, and downsampled preview.
+## Repository Map
+
+```text
+docs/                         Project documentation
+.github/                      CI, issue templates, and PR template
+src/isp-core.js                ISP algorithms, parsers, and profiler helpers
+src/app.js                     Browser UI logic
+src/code-walkthrough.js        Per-stage code explanation content
+src/styles.css                 Application styling
+assets/demos/                  Demo thumbnails
+samples/                       Small tested RAW/PGM samples
+tests/                         Core and QA checks
+scripts/static-server.mjs      Local static server
+index.html                     Static web application
+ROADMAP.md                     Release roadmap
+```
 
 ## Documentation
 
@@ -62,9 +92,6 @@ The new Performance Profiler also turns the pipeline into a small fluency-analys
 - [Project understanding](docs/PROJECT_UNDERSTANDING.en.md)
 - [Development plan](docs/DEVELOPMENT_PLAN.en.md)
 - [Roadmap](ROADMAP.md)
-- [Educational assistant understanding](docs/EDUCATIONAL_ASSISTANT_UNDERSTANDING.en.md)
-- [Educational assistant technical design](docs/EDUCATIONAL_ASSISTANT_TECHNICAL_DESIGN.en.md)
-- [Educational assistant development plan](docs/EDUCATIONAL_ASSISTANT_DEVELOPMENT_PLAN.en.md)
 
 Chinese documentation:
 
@@ -74,22 +101,6 @@ Chinese documentation:
 - [距离高星 GitHub 项目的差距分析](docs/GITHUB_STAR_GAP_ANALYSIS.zh-CN.md)
 - [开源成长计划](docs/OPEN_SOURCE_GROWTH_PLAN.zh-CN.md)
 
-## Repository Map
-
-```text
-docs/                         Project documentation
-.github/                      CI, issue templates, and PR template
-src/isp-core.js                ISP algorithms, parsers, and profiler helpers
-src/app.js                     Browser UI logic
-src/styles.css                 Application styling
-assets/demos/                  Demo thumbnails
-samples/                       Small tested RAW/PGM samples
-tests/                         Core and QA checks
-scripts/static-server.mjs      Local static server
-index.html                     Static web application
-ROADMAP.md                     Release roadmap
-```
-
 ## Current Status
 
-This is an educational and experimental ISP reference, not a production camera pipeline. The code favors clarity and inspectability. Future work includes real RAW/DNG metadata support, more demosaic algorithms, quality metrics, worker/WASM acceleration, and exported performance reports.
+PixelPipe ISP Lab is an educational and experimental ISP reference, not a production camera firmware pipeline. The code favors clarity, inspectability, and learning value. Future work includes richer RAW/DNG metadata support, more demosaic algorithms, objective image-quality metrics, worker/WASM acceleration, and shareable performance reports.

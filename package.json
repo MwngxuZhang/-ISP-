@@ -1,7 +1,7 @@
 {
-  "name": "raw-to-rgb-isp-lab",
-  "version": "0.0.0",
-  "description": "Open-source visual RAW to ISP to RGB learning toolchain.",
+  "name": "raw-isp-rgb-lab",
+  "version": "0.3.7",
+  "description": "PixelPipe ISP Lab: visual RAW-to-RGB ISP learning, tuning, and performance insight.",
   "type": "module",
   "scripts": {
     "qa": "node tests/qa-check.mjs && node tests/run-tests.mjs",
@@ -14,7 +14,9 @@
     "rgb",
     "image-processing",
     "camera-pipeline",
-    "visualization"
+    "visualization",
+    "isp-learning",
+    "raw-to-rgb"
   ],
   "license": "MIT"
 }
