@@ -2,26 +2,29 @@
 
 Learn camera ISP from RAW to RGB, one pixel at a time.
 
-PixelPipe ISP Lab is an open-source visual learning lab for image engineers, ISP beginners, and portfolio projects. It turns the camera pipeline into something you can touch: choose a scene, move a slider, inspect each ISP stage, read the formula, and jump into the code behind the result.
+PixelPipe ISP Lab is an open-source visual learning lab for image engineers and ISP beginners. It turns the camera pipeline into something you can touch: choose a scene, move a slider, inspect each ISP stage, read the formula, and jump into the code behind the result.
 
 Live demo: [https://mwngxuzhang.github.io/-ISP-/](https://mwngxuzhang.github.io/-ISP-/)
 
-## Why Star This Project?
+## Why Learn With This Project?
 
 - It makes ISP visible: RAW data, intermediate stages, histograms, metrics, formulas, and final RGB are shown together.
 - It is beginner-friendly: the 3D learning assistant explains why each operation exists in a phone or camera pipeline.
 - It is hands-on: real-time controls update the actual demo image, not only symbolic diagrams.
 - It is readable: every major stage includes a compact source-code walkthrough.
-- It is portfolio-ready: bilingual docs, tested demo cases, CI, issue templates, roadmap, and open-source growth notes are included.
+- It is useful for imaging-system learning: bilingual docs, tested demo cases, CI, issue templates, and a roadmap are included.
 
 ## What You Can Learn
 
 - RAW sensor structure and Bayer patterns.
+- How autofocus, lens control, auto exposure, brightness/contrast, and color systems form a complete imaging-control loop.
 - Black level correction and why sensors need a baseline offset.
 - Bad pixel correction for sensor defects.
 - Lens shading correction for optical falloff.
 - Demosaic, white balance, color correction matrix, denoise, sharpen, tone mapping, and gamma.
 - How tuning controls change the image, the histogram, and stage metrics.
+- Tradeoffs in video codecs, denoise, restoration, enhancement, and real-time processing.
+- How computational photography and AI imaging apply to HDR, multi-view measurement, stitching, dehaze, deblur, super-resolution, and AIGC enhancement.
 - How a production camera pipeline can be broken into explainable modules.
 
 ## Feature Highlights
@@ -87,8 +90,8 @@ ROADMAP.md                     Release roadmap
 
 - [User guide](docs/USER_GUIDE.en.md)
 - [Technical design](docs/TECHNICAL_DESIGN.en.md)
-- [GitHub star gap analysis](docs/GITHUB_STAR_GAP_ANALYSIS.en.md)
-- [Open source growth plan](docs/OPEN_SOURCE_GROWTH_PLAN.en.md)
+- [Advanced imaging system roadmap](docs/ADVANCED_IMAGING_SYSTEM_ROADMAP.en.md)
+- [Device scenario teaching specification](docs/DEVICE_SCENARIO_TEACHING_SPEC.en.md)
 - [Project understanding](docs/PROJECT_UNDERSTANDING.en.md)
 - [Development plan](docs/DEVELOPMENT_PLAN.en.md)
 - [Roadmap](ROADMAP.md)
@@ -98,8 +101,8 @@ Chinese documentation:
 - [中文 README](README.zh-CN.md)
 - [使用指南](docs/USER_GUIDE.zh-CN.md)
 - [技术设计](docs/TECHNICAL_DESIGN.zh-CN.md)
-- [距离高星 GitHub 项目的差距分析](docs/GITHUB_STAR_GAP_ANALYSIS.zh-CN.md)
-- [开源成长计划](docs/OPEN_SOURCE_GROWTH_PLAN.zh-CN.md)
+- [高级成像系统学习路线](docs/ADVANCED_IMAGING_SYSTEM_ROADMAP.zh-CN.md)
+- [设备场景案例地图教学规格](docs/DEVICE_SCENARIO_TEACHING_SPEC.zh-CN.md)
 
 ## Current Status
 

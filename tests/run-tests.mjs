@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { URL } from "node:url";
 import { DEMO_CASES, getDemoCases } from "../src/demo-cases.js";
+import { evaluateAdvancedLab, getAdvancedImagingContent } from "../src/advanced-imaging-content.js";
 import { FORMULA_STAGE_KEYS, getFormulaContent } from "../src/formula-content.js";
 import {
   applyLensShadingCorrection,
@@ -155,6 +156,43 @@ assert.equal(zhDemoCases[0].title, "色卡");
 assert.ok(zhDemoCases[0].description.includes("白平衡"));
 assert.ok(zhDemoCases.some((demo) => demo.focus.includes("降噪")));
 assert.ok(zhDemoCases.some((demo) => demo.scene === "portraitSkin"));
+
+const advancedEn = getAdvancedImagingContent("en");
+const advancedZh = getAdvancedImagingContent("zh");
+assert.equal(advancedEn.labs.length, 12);
+assert.equal(advancedZh.labs.length, 12);
+assert.equal(advancedZh.scenarios.length, 6);
+assert.ok(advancedZh.labels.title.includes("完整相机成像链路"));
+assert.ok(advancedZh.labels.openScenario.includes("打开"));
+for (const lab of advancedZh.labs) {
+  assert.ok(lab.title.length >= 4);
+  assert.ok(lab.why.length > 30);
+  assert.ok(lab.formula.length > 10);
+  assert.ok(lab.code.length > 20);
+  assert.ok(lab.tasks.length >= 3);
+  assert.ok(lab.robot.length > 20);
+  const evaluation = evaluateAdvancedLab(lab, lab.value);
+  assert.ok(evaluation.percent >= 0 && evaluation.percent <= 100);
+  assert.ok(evaluation.risk.length > 2);
+}
+assert.ok(advancedZh.labs.some((lab) => lab.title.includes("自动对焦")));
+assert.ok(advancedZh.labs.some((lab) => lab.title.includes("视频")));
+assert.ok(advancedZh.labs.some((lab) => lab.title.includes("AI")));
+const srLab = advancedZh.labs.find((lab) => lab.id === "ai");
+assert.equal(srLab.controlLabel, "超分倍率");
+assert.equal(srLab.unit, "x");
+assert.equal(srLab.min, 1);
+assert.equal(srLab.max, 4);
+assert.ok(evaluateAdvancedLab(srLab, 4).percent > evaluateAdvancedLab(srLab, 1).percent);
+assert.ok(advancedZh.scenarios.some((scenario) => scenario.title.includes("医疗")));
+for (const scenario of advancedZh.scenarios) {
+  assert.ok(scenario.demo.length > 4);
+  assert.ok(scenario.pipeline.length > 20);
+  assert.ok(scenario.control.length > 15);
+  assert.ok(scenario.labId.length > 2);
+  assert.ok(scenario.thumbnail.includes("assets/scenarios"));
+  assert.ok(advancedZh.labs.some((lab) => lab.id === scenario.labId));
+}
 
 for (const scene of Object.keys(SAMPLE_SCENES)) {
   const sceneRaw = generateSyntheticRaw(32, 24, 12, "RGGB", scene);

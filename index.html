@@ -131,37 +131,6 @@
           <div id="demoGallery" class="demo-gallery"></div>
         </section>
 
-        <section class="maturity-section" aria-label="Open-source maturity dashboard">
-          <div>
-            <p class="eyebrow" id="maturityEyebrow">Open-source maturity</p>
-            <h2 id="maturityTitle">From portfolio demo to star-worthy project</h2>
-            <p id="maturityIntro">High-star projects are easy to try, easy to trust, and easy to contribute to. This dashboard shows what has been strengthened and what comes next.</p>
-          </div>
-          <div class="maturity-grid">
-            <article>
-              <strong id="maturityDemoTitle">Instant demo</strong>
-              <span id="maturityDemoText">Static web app, built-in scenes, no heavy install.</span>
-            </article>
-            <article>
-              <strong id="maturityTrustTitle">Trust signals</strong>
-              <span id="maturityTrustText">Core tests, QA checks, CI workflow, honest upload limits.</span>
-            </article>
-            <article>
-              <strong id="maturityDocsTitle">Docs system</strong>
-              <span id="maturityDocsText">User guide, technical design, roadmap, star gap analysis.</span>
-            </article>
-            <article>
-              <strong id="maturityCommunityTitle">Contribution path</strong>
-              <span id="maturityCommunityText">Issue templates, PR template, roadmap, good next steps.</span>
-            </article>
-          </div>
-          <div class="maturity-links">
-            <a href="./docs/GITHUB_STAR_GAP_ANALYSIS.zh-CN.md" target="_blank" id="maturityGapLink">Read gap analysis</a>
-            <a href="./docs/OPEN_SOURCE_GROWTH_PLAN.zh-CN.md" target="_blank" id="maturityGrowthLink">Open growth plan</a>
-            <a href="./ROADMAP.md" target="_blank" id="maturityRoadmapLink">View roadmap</a>
-          </div>
-        </section>
-
         <nav id="pipelineRail" class="pipeline-rail" aria-label="ISP pipeline"></nav>
 
         <section class="profiler-section" aria-label="Performance profiler">
@@ -252,13 +221,20 @@
                     <h4 id="formulaTitle">Bayer sampling model</h4>
                   </div>
                   <p id="formulaText" class="formula-text">RAW(x,y) = C(x,y) * E(x,y) + n(x,y)</p>
-                  <canvas id="formulaCanvas" class="formula-canvas" aria-label="Formula visual diagram"></canvas>
+                  <div class="formula-viewer">
+                    <canvas id="formulaCanvas" class="formula-canvas active" aria-label="Formula visual diagram"></canvas>
+                    <canvas id="formulaSceneCanvas" class="formula-scene-canvas" aria-label="Real scene formula preview"></canvas>
+                  </div>
                   <div class="formula-legend" aria-label="Formula diagram legend">
                     <span><i class="legend-current"></i><span id="formulaLegendCurrent">Current value</span></span>
                     <span><i class="legend-default"></i><span id="formulaLegendDefault">Default value</span></span>
                   </div>
                   <label class="formula-control">
                     <span id="formulaControlLabel">Scene brightness</span>
+                    <span class="view-toggle formula-view-toggle" aria-label="Formula preview mode">
+                      <button id="formulaDiagramButton" type="button" class="active">Diagram</button>
+                      <button id="formulaSceneButton" type="button">Scene</button>
+                    </span>
                     <input id="formulaInput" type="range" min="0" max="1" step="0.01" value="0.35">
                     <output id="formulaValue">0.35</output>
                   </label>
@@ -306,6 +282,23 @@
           <article class="stage" data-stage="denoise"><h2>08 Denoise</h2><canvas id="denoiseCanvas"></canvas><canvas class="histogram" id="denoiseHist"></canvas><p class="metric" id="denoiseMetric">-</p></article>
           <article class="stage" data-stage="sharpen"><h2>09 Sharpen</h2><canvas id="sharpenCanvas"></canvas><canvas class="histogram" id="sharpenHist"></canvas><p class="metric" id="sharpenMetric">-</p></article>
           <article class="stage" data-stage="tone"><h2>10 Tone + Gamma</h2><canvas id="toneCanvas"></canvas><canvas class="histogram" id="toneHist"></canvas><p class="metric" id="toneMetric">-</p></article>
+        </section>
+
+        <section class="advanced-section" aria-label="Advanced imaging system labs">
+          <div class="advanced-head">
+            <div>
+              <p class="eyebrow" id="advancedEyebrow">Advanced imaging system</p>
+              <h2 id="advancedTitle">Beyond RAW ISP: learn the whole camera pipeline</h2>
+              <p id="advancedIntro">These labs extend the current ISP demo into autofocus, exposure, color, video, computational photography, AI imaging, and device-specific imaging tradeoffs.</p>
+            </div>
+            <a class="advanced-doc-link" id="advancedDocsLink" href="./docs/ADVANCED_IMAGING_SYSTEM_ROADMAP.en.md" target="_blank">Read technical route</a>
+          </div>
+          <div id="advancedTabs" class="advanced-tabs" role="tablist"></div>
+          <div id="advancedLab" class="advanced-lab"></div>
+          <div class="scenario-panel">
+            <h3 id="advancedScenarioTitle">Device scenario map</h3>
+            <div id="advancedScenarios" class="scenario-grid"></div>
+          </div>
         </section>
       </section>
     </main>

@@ -2,26 +2,29 @@
 
 学习 ISP？PixelPipe 就够啦。
 
-PixelPipe ISP Lab 是一个开源的 RAW -> ISP -> RGB 可视化学习实验室，面向图像算法工程师、ISP 初学者和作品集展示。它把手机相机里的成像 pipeline 做成可以直接操作的网页：选择一个案例，拖动一个参数，观察每个 ISP 阶段、公式、直方图、代码片段和最终 RGB 图像如何一起变化。
+PixelPipe ISP Lab 是一个开源的 RAW -> ISP -> RGB 可视化学习实验室，面向图像算法工程师和 ISP 初学者。它把手机相机里的成像 pipeline 做成可以直接操作的网页：选择一个案例，拖动一个参数，观察每个 ISP 阶段、公式、直方图、代码片段和最终 RGB 图像如何一起变化。
 
 在线体验：[https://mwngxuzhang.github.io/-ISP-/](https://mwngxuzhang.github.io/-ISP-/)
 
-## 为什么值得 Star？
+## 为什么值得学习？
 
 - 它把 ISP 变得可见：RAW 数据、中间阶段、直方图、指标、公式和最终 RGB 会一起展示。
 - 它对新手友好：3D 学习助手会解释每一步为什么存在，对应相机或手机里的什么问题。
 - 它可以动手调：黑电平、白平衡、去噪、锐化、Tone/Gamma 等参数会实时作用到真实演示图像。
 - 它能看代码：每个主要阶段都附带简短的源码讲解，方便从“看效果”走到“看实现”。
-- 它适合作品集：项目包含中英文文档、测试案例、CI、Issue 模板、Roadmap 和开源成长计划。
+- 它适合作为图像工程学习项目：项目包含中英文文档、测试案例、CI、Issue 模板和 Roadmap。
 
 ## 你可以学到什么？
 
 - RAW 传感器数据和 Bayer 排列。
+- 自动对焦、镜头控制、自动曝光、亮度/对比度和颜色系统如何组成完整成像控制链路。
 - 黑电平校正为什么要减掉传感器基线偏置。
 - 坏点校正如何处理传感器缺陷。
 - 镜头阴影校正如何补偿边缘暗角。
 - Demosaic、白平衡、颜色校正矩阵、去噪、锐化、Tone Mapping、Gamma 的作用。
 - 调参如何影响图像、直方图和阶段指标。
+- 视频编解码、视频去噪、恢复、增强和实时性之间的取舍。
+- 计算摄影与 AI 图像算法在 HDR、多目测量、拼接、去雾、去模糊、超分和 AIGC 增强中的作用。
 - 生产级相机 pipeline 如何拆成可以解释、可以测试、可以优化的模块。
 
 ## 功能亮点
@@ -87,8 +90,8 @@ ROADMAP.md                     版本路线图
 
 - [使用指南](docs/USER_GUIDE.zh-CN.md)
 - [技术设计](docs/TECHNICAL_DESIGN.zh-CN.md)
-- [距离高星 GitHub 项目的差距分析](docs/GITHUB_STAR_GAP_ANALYSIS.zh-CN.md)
-- [开源成长计划](docs/OPEN_SOURCE_GROWTH_PLAN.zh-CN.md)
+- [高级成像系统学习路线](docs/ADVANCED_IMAGING_SYSTEM_ROADMAP.zh-CN.md)
+- [设备场景案例地图教学规格](docs/DEVICE_SCENARIO_TEACHING_SPEC.zh-CN.md)
 - [项目理解](docs/PROJECT_UNDERSTANDING.zh-CN.md)
 - [开发计划](docs/DEVELOPMENT_PLAN.zh-CN.md)
 - [Roadmap](ROADMAP.md)
@@ -98,8 +101,8 @@ ROADMAP.md                     版本路线图
 - [English README](README.en.md)
 - [User guide](docs/USER_GUIDE.en.md)
 - [Technical design](docs/TECHNICAL_DESIGN.en.md)
-- [GitHub star gap analysis](docs/GITHUB_STAR_GAP_ANALYSIS.en.md)
-- [Open source growth plan](docs/OPEN_SOURCE_GROWTH_PLAN.en.md)
+- [Advanced imaging system roadmap](docs/ADVANCED_IMAGING_SYSTEM_ROADMAP.en.md)
+- [Device scenario teaching specification](docs/DEVICE_SCENARIO_TEACHING_SPEC.en.md)
 
 ## 当前状态
 

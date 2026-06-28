@@ -10,6 +10,8 @@ const requiredFiles = [
   "README.md",
   "README.en.md",
   "README.zh-CN.md",
+  "CHANGELOG.en.md",
+  "CHANGELOG.zh-CN.md",
   "CONTRIBUTING.md",
   "CONTRIBUTING.en.md",
   "CONTRIBUTING.zh-CN.md",
@@ -24,6 +26,7 @@ const requiredFiles = [
   "src/isp-core.js",
   "src/app.js",
   "src/app-production-pipeline.js",
+  "src/advanced-imaging-content.js",
   "src/code-walkthrough.js",
   "src/demo-cases.js",
   "src/demo-cases-rich.js",
@@ -41,6 +44,12 @@ const requiredFiles = [
   "assets/demos/portrait-skin.svg",
   "assets/demos/night-street.svg",
   "assets/demos/backlit-window.svg",
+  "assets/scenarios/camera-photography.png",
+  "assets/scenarios/phone-photography.png",
+  "assets/scenarios/cinema-camera.png",
+  "assets/scenarios/vr-headset.png",
+  "assets/scenarios/medical-imaging.png",
+  "assets/scenarios/display-output.png",
   "tests/run-tests.mjs",
   "scripts/static-server.mjs",
   "docs/USER_GUIDE.md",
@@ -48,12 +57,10 @@ const requiredFiles = [
   "docs/USER_GUIDE.zh-CN.md",
   "docs/TECHNICAL_DESIGN.en.md",
   "docs/TECHNICAL_DESIGN.zh-CN.md",
-  "docs/GITHUB_STAR_GAP_ANALYSIS.md",
-  "docs/GITHUB_STAR_GAP_ANALYSIS.en.md",
-  "docs/GITHUB_STAR_GAP_ANALYSIS.zh-CN.md",
-  "docs/OPEN_SOURCE_GROWTH_PLAN.md",
-  "docs/OPEN_SOURCE_GROWTH_PLAN.en.md",
-  "docs/OPEN_SOURCE_GROWTH_PLAN.zh-CN.md",
+  "docs/ADVANCED_IMAGING_SYSTEM_ROADMAP.en.md",
+  "docs/ADVANCED_IMAGING_SYSTEM_ROADMAP.zh-CN.md",
+  "docs/DEVICE_SCENARIO_TEACHING_SPEC.en.md",
+  "docs/DEVICE_SCENARIO_TEACHING_SPEC.zh-CN.md",
   "docs/DEVELOPMENT_PLAN.en.md",
   "docs/DEVELOPMENT_PLAN.zh-CN.md",
   "docs/PROJECT_UNDERSTANDING.en.md",
@@ -107,6 +114,7 @@ const core = readFileSync(join(root, "src/isp-core.js"), "utf8");
 const formulas = readFileSync(join(root, "src/formula-content.js"), "utf8");
 const tutorial = readFileSync(join(root, "src/tutorial-content.js"), "utf8");
 const demoCases = readFileSync(join(root, "src/demo-cases.js"), "utf8");
+const advancedContent = readFileSync(join(root, "src/advanced-imaging-content.js"), "utf8");
 
 for (const id of [
   "languageInput",
@@ -114,10 +122,14 @@ for (const id of [
   "demoIntro",
   "sampleSceneInput",
   "demoGallery",
-  "maturityTitle",
-  "maturityGapLink",
-  "maturityGrowthLink",
-  "maturityRoadmapLink",
+  "advancedEyebrow",
+  "advancedTitle",
+  "advancedIntro",
+  "advancedDocsLink",
+  "advancedTabs",
+  "advancedLab",
+  "advancedScenarioTitle",
+  "advancedScenarios",
   "autoWbButton",
   "autoExposureButton",
   "exportButton",
@@ -204,6 +216,23 @@ for (const stage of ["raw", "norm", "bad", "lsc", "demosaic", "wb", "ccm", "deno
 assert.ok(app.includes("getTutorialSteps"), "App does not load localized tutorial steps");
 assert.ok(app.includes("getTutorialLabels"), "App does not load localized tutorial labels");
 assert.ok(app.includes("getDemoCases"), "App does not load localized demo cases");
+assert.ok(app.includes("getAdvancedImagingContent"), "App does not load advanced imaging labs");
+assert.ok(app.includes("evaluateAdvancedLab"), "App missing advanced imaging metric evaluation");
+assert.ok(app.includes("renderAdvancedImagingLabs"), "App missing advanced imaging lab renderer");
+assert.ok(app.includes("advancedLabSlider"), "Advanced imaging labs need an interactive slider");
+assert.ok(app.includes("advancedObservationText"), "Advanced imaging labs should explain what to observe and common failures");
+assert.ok(app.includes("advancedPipelineWalkthrough"), "Advanced imaging labs should include full pipeline walkthrough text");
+assert.ok(app.includes("scenario.pipeline"), "Device scenario cards should show device-specific imaging pipelines");
+assert.ok(app.includes("advancedScenePreview"), "Advanced imaging previews should use live scene-image previews");
+assert.ok(app.includes("assets/scenarios"), "Advanced imaging previews should use dedicated device scenario assets");
+assert.ok(app.includes("advancedPreviewMode"), "Advanced imaging should support diagram/scene preview switching");
+assert.ok(app.includes("drawFormulaScenePreview"), "ISP formula lab should include a real scene preview beside the diagram");
+assert.ok(index.includes("formulaSceneCanvas"), "Formula lab should expose a real-scene preview canvas");
+assert.ok(index.includes("formulaDiagramButton"), "Formula lab should expose diagram/scene toggle buttons");
+assert.ok(app.includes("advanced-insight-grid"), "Advanced imaging labs should render observation/failure cards");
+assert.ok(app.includes("scenario.labId"), "Device scenario map should open real advanced cases");
+assert.ok(advancedContent.includes("Super-resolution scale") || advancedContent.includes("超分倍率"), "AI case should model super-resolution explicitly");
+assert.ok(app.includes("ADVANCED_IMAGING_SYSTEM_ROADMAP"), "Advanced imaging docs should be linked from the app");
 assert.ok(app.includes("setLanguage"), "App missing language switch behavior");
 assert.ok(app.includes("rawIspRgbLanguage"), "App missing persisted language preference");
 assert.ok(app.includes("renderDemoGallery"), "App missing demo gallery rendering");
@@ -255,12 +284,11 @@ assert.ok(index.includes("formula-lab"), "index.html missing interactive formula
 assert.ok(index.includes("code-lab"), "index.html missing code walkthrough panel");
 assert.ok(index.includes("formula-legend"), "index.html missing current/default formula legend");
 assert.ok(index.includes("profiler-section"), "index.html missing performance profiler panel");
-assert.ok(index.includes("maturity-section"), "index.html missing open-source maturity section");
+assert.ok(!index.includes(["maturity", "section"].join("-")), "index.html should not expose packaging-dashboard content");
+assert.ok(!index.includes(["star", "worthy"].join("-")), "index.html should not expose ranking-oriented packaging language");
 assert.ok(index.includes("src/app-production-pipeline.js"), "index.html should load the cache-busted production app entry");
 assert.ok(app.includes("tapBubble || step.bubble"), "App missing richer stage-click mascot language");
-assert.ok(readFileSync(join(root, "docs/GITHUB_STAR_GAP_ANALYSIS.en.md"), "utf8").includes("Performance Profiler"), "Gap analysis should mention profiler upgrade");
-assert.ok(readFileSync(join(root, "docs/GITHUB_STAR_GAP_ANALYSIS.zh-CN.md"), "utf8").includes("高星"), "Chinese gap analysis should explain high-star gap");
-assert.ok(readFileSync(join(root, "docs/OPEN_SOURCE_GROWTH_PLAN.en.md"), "utf8").includes("High-star projects"), "Growth plan should explain high-star qualities");
+assert.ok(!app.includes(["maturity", "Title"].join("")), "App should not render packaging-dashboard content");
 assert.ok(readFileSync(join(root, "ROADMAP.md"), "utf8").includes("0.1 Learning Stable"), "Roadmap missing 0.1 milestone");
 assert.ok(readFileSync(join(root, ".github/workflows/ci.yml"), "utf8").includes("npm test"), "CI should run npm test");
 assert.ok(readFileSync(join(root, "src/code-walkthrough.js"), "utf8").includes("generateSyntheticRaw"), "Code walkthrough should explain RAW code path");

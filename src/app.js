@@ -17,6 +17,7 @@ import { demoCaseForScene, getDemoCases } from "./demo-cases-rich.js";
 import { getCodeWalkthrough } from "./code-walkthrough.js";
 import { getFormulaContent } from "./formula-content.js";
 import { getTutorialLabels, getTutorialSteps, tutorialIndexForStage } from "./tutorial-content-pipeline.js";
+import { evaluateAdvancedLab, getAdvancedImagingContent } from "./advanced-imaging-content.js";
 
 const UI_TEXT = {
   en: {
@@ -30,20 +31,6 @@ const UI_TEXT = {
     guide: "Guide",
     demoHeading: "Choose a tested demo image",
     demoIntro: "Pick one image, then follow the guide from RAW to RGB.",
-    maturityEyebrow: "Open-source maturity",
-    maturityTitle: "From portfolio demo to star-worthy project",
-    maturityIntro: "High-star projects are easy to try, easy to trust, and easy to contribute to. This dashboard shows what has been strengthened and what comes next.",
-    maturityDemoTitle: "Instant demo",
-    maturityDemoText: "Static web app, built-in scenes, no heavy install.",
-    maturityTrustTitle: "Trust signals",
-    maturityTrustText: "Core tests, QA checks, CI workflow, honest upload limits.",
-    maturityDocsTitle: "Docs system",
-    maturityDocsText: "User guide, technical design, roadmap, star gap analysis.",
-    maturityCommunityTitle: "Contribution path",
-    maturityCommunityText: "Issue templates, PR template, roadmap, good next steps.",
-    maturityGapLink: "Read gap analysis",
-    maturityGrowthLink: "Open growth plan",
-    maturityRoadmapLink: "View roadmap",
     formulaEyebrow: "Interactive formula",
     formulaCurrent: "Current value",
     formulaDefault: "Default value",
@@ -111,20 +98,6 @@ const UI_TEXT = {
     guide: "指南",
     demoHeading: "选择一张已测试演示图",
     demoIntro: "点选图片，然后跟随向导从 RAW 走到 RGB。",
-    maturityEyebrow: "开源成熟度",
-    maturityTitle: "从作品集 Demo 走向值得 Star 的项目",
-    maturityIntro: "高星项目通常容易尝试、容易信任、容易贡献。这里展示当前已补强的部分和下一步路线。",
-    maturityDemoTitle: "即开即用 Demo",
-    maturityDemoText: "静态网页、内置场景、不需要复杂安装。",
-    maturityTrustTitle: "可信信号",
-    maturityTrustText: "核心测试、QA 检查、CI workflow、诚实说明上传限制。",
-    maturityDocsTitle: "文档体系",
-    maturityDocsText: "用户指南、技术设计、路线图、高星差距分析。",
-    maturityCommunityTitle: "贡献路径",
-    maturityCommunityText: "Issue 模板、PR 模板、路线图和清晰下一步。",
-    maturityGapLink: "查看差距分析",
-    maturityGrowthLink: "查看成长计划",
-    maturityRoadmapLink: "查看路线图",
     formulaEyebrow: "交互公式",
     formulaCurrent: "当前值",
     formulaDefault: "默认值",
@@ -312,20 +285,14 @@ const els = {
   sampleScene: document.querySelector("#sampleSceneInput"),
   sampleDescription: document.querySelector("#sampleDescription"),
   demoGallery: document.querySelector("#demoGallery"),
-  maturityEyebrow: document.querySelector("#maturityEyebrow"),
-  maturityTitle: document.querySelector("#maturityTitle"),
-  maturityIntro: document.querySelector("#maturityIntro"),
-  maturityDemoTitle: document.querySelector("#maturityDemoTitle"),
-  maturityDemoText: document.querySelector("#maturityDemoText"),
-  maturityTrustTitle: document.querySelector("#maturityTrustTitle"),
-  maturityTrustText: document.querySelector("#maturityTrustText"),
-  maturityDocsTitle: document.querySelector("#maturityDocsTitle"),
-  maturityDocsText: document.querySelector("#maturityDocsText"),
-  maturityCommunityTitle: document.querySelector("#maturityCommunityTitle"),
-  maturityCommunityText: document.querySelector("#maturityCommunityText"),
-  maturityGapLink: document.querySelector("#maturityGapLink"),
-  maturityGrowthLink: document.querySelector("#maturityGrowthLink"),
-  maturityRoadmapLink: document.querySelector("#maturityRoadmapLink"),
+  advancedEyebrow: document.querySelector("#advancedEyebrow"),
+  advancedTitle: document.querySelector("#advancedTitle"),
+  advancedIntro: document.querySelector("#advancedIntro"),
+  advancedDocsLink: document.querySelector("#advancedDocsLink"),
+  advancedTabs: document.querySelector("#advancedTabs"),
+  advancedLab: document.querySelector("#advancedLab"),
+  advancedScenarioTitle: document.querySelector("#advancedScenarioTitle"),
+  advancedScenarios: document.querySelector("#advancedScenarios"),
   width: document.querySelector("#widthInput"),
   height: document.querySelector("#heightInput"),
   bitDepth: document.querySelector("#bitDepthInput"),
@@ -381,8 +348,11 @@ const els = {
   coachCheckpoint: document.querySelector("#coachCheckpoint"),
   formulaEyebrow: document.querySelector("#formulaEyebrow"),
   formulaTitle: document.querySelector("#formulaTitle"),
-  formulaText: document.querySelector("#formulaText"),
-  formulaCanvas: document.querySelector("#formulaCanvas"),
+    formulaText: document.querySelector("#formulaText"),
+    formulaCanvas: document.querySelector("#formulaCanvas"),
+    formulaSceneCanvas: document.querySelector("#formulaSceneCanvas"),
+    formulaDiagramButton: document.querySelector("#formulaDiagramButton"),
+    formulaSceneButton: document.querySelector("#formulaSceneButton"),
   formulaLegendCurrent: document.querySelector("#formulaLegendCurrent"),
   formulaLegendDefault: document.querySelector("#formulaLegendDefault"),
   formulaControlLabel: document.querySelector("#formulaControlLabel"),
@@ -462,6 +432,11 @@ let currentLanguage = loadLanguage();
 let tutorialSteps = getTutorialSteps(currentLanguage);
 let tutorialLabels = getTutorialLabels(currentLanguage);
 let formulaRawBaseline = null;
+let formulaPreviewMode = "diagram";
+let currentAdvancedLabId = "autofocus";
+const advancedLabValues = new Map();
+let advancedSliderFrame = 0;
+let advancedPreviewMode = "scene";
 
 const defaultControls = {
   badPixel: 0.32,
@@ -530,22 +505,7 @@ function refreshStaticText() {
   els.presetButton.textContent = text("presetJson");
   els.demoHeading.textContent = text("demoHeading");
   els.demoIntro.textContent = text("demoIntro");
-  els.maturityEyebrow.textContent = text("maturityEyebrow");
-  els.maturityTitle.textContent = text("maturityTitle");
-  els.maturityIntro.textContent = text("maturityIntro");
-  els.maturityDemoTitle.textContent = text("maturityDemoTitle");
-  els.maturityDemoText.textContent = text("maturityDemoText");
-  els.maturityTrustTitle.textContent = text("maturityTrustTitle");
-  els.maturityTrustText.textContent = text("maturityTrustText");
-  els.maturityDocsTitle.textContent = text("maturityDocsTitle");
-  els.maturityDocsText.textContent = text("maturityDocsText");
-  els.maturityCommunityTitle.textContent = text("maturityCommunityTitle");
-  els.maturityCommunityText.textContent = text("maturityCommunityText");
-  els.maturityGapLink.textContent = text("maturityGapLink");
-  els.maturityGrowthLink.textContent = text("maturityGrowthLink");
-  els.maturityRoadmapLink.textContent = text("maturityRoadmapLink");
-  els.maturityGapLink.href = currentLanguage === "zh" ? "./docs/GITHUB_STAR_GAP_ANALYSIS.zh-CN.md" : "./docs/GITHUB_STAR_GAP_ANALYSIS.en.md";
-  els.maturityGrowthLink.href = currentLanguage === "zh" ? "./docs/OPEN_SOURCE_GROWTH_PLAN.zh-CN.md" : "./docs/OPEN_SOURCE_GROWTH_PLAN.en.md";
+  renderAdvancedImagingLabs();
   els.profilerEyebrow.textContent = text("profilerEyebrow");
   els.profilerTitle.textContent = text("profilerTitle");
   els.profilerIntro.textContent = text("profilerIntro");
@@ -554,6 +514,7 @@ function refreshStaticText() {
   els.profilerBottleneckLabel.textContent = text("profilerBottleneck");
   els.profilerBreakdownTitle.textContent = text("profilerBreakdown");
   els.profilerSuggestionTitle.textContent = text("profilerSuggestions");
+  updateFormulaPreviewMode();
   const languageControl = document.querySelector(".language-control");
   if (languageControl?.firstChild) {
     languageControl.firstChild.textContent = `${text("language")} `;
@@ -589,6 +550,7 @@ function setLanguage(language) {
   refreshStaticText();
   renderDemoGallery();
   syncSampleDescription();
+  renderAdvancedImagingLabs();
   updateTutorial(currentHeroStage);
   render();
 }
@@ -875,6 +837,47 @@ function drawFormulaDiagram(stageKey, value, content) {
   ctx.setTransform?.(1, 0, 0, 1, 0, 0);
 }
 
+function drawFormulaScenePreview(stageKey) {
+  const canvas = els.formulaSceneCanvas;
+  const imageData = stageImages[stageKey] ?? stageImages[currentHeroStage] ?? lastFinalImageData;
+  if (!canvas || !imageData) return;
+  const width = 360;
+  const height = 170;
+  const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+  canvas.width = Math.round(width * dpr);
+  canvas.height = Math.round(height * dpr);
+  canvas.style.width = "100%";
+  canvas.style.height = "auto";
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform?.(dpr, 0, 0, dpr, 0, 0);
+  ctx.fillStyle = "#11161b";
+  ctx.fillRect(0, 0, width, height);
+
+  const temp = document.createElement("canvas");
+  temp.width = imageData.width;
+  temp.height = imageData.height;
+  temp.getContext("2d").putImageData(imageData, 0, 0);
+  const scale = Math.min(width / imageData.width, height / imageData.height);
+  const drawW = imageData.width * scale;
+  const drawH = imageData.height * scale;
+  const x = (width - drawW) / 2;
+  const y = (height - drawH) / 2;
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(temp, x, y, drawW, drawH);
+  ctx.setTransform?.(1, 0, 0, 1, 0, 0);
+}
+
+function updateFormulaPreviewMode() {
+  const isScene = formulaPreviewMode === "scene";
+  els.formulaCanvas?.classList.toggle("active", !isScene);
+  els.formulaSceneCanvas?.classList.toggle("active", isScene);
+  els.formulaDiagramButton?.classList.toggle("active", !isScene);
+  els.formulaSceneButton?.classList.toggle("active", isScene);
+  if (els.formulaDiagramButton) els.formulaDiagramButton.textContent = currentLanguage === "zh" ? "示意" : "Diagram";
+  if (els.formulaSceneButton) els.formulaSceneButton.textContent = currentLanguage === "zh" ? "真实" : "Scene";
+  drawFormulaScenePreview(tutorialSteps[currentTutorialIndex]?.key ?? currentHeroStage);
+}
+
 function updateFormulaResult(content, value) {
   const min = Number(content.interaction.min);
   const max = Number(content.interaction.max);
@@ -888,6 +891,8 @@ function updateFormulaResult(content, value) {
     normalized
   );
   drawFormulaDiagram(tutorialSteps[currentTutorialIndex]?.key ?? "raw", value, content);
+  drawFormulaScenePreview(tutorialSteps[currentTutorialIndex]?.key ?? "raw");
+  updateFormulaPreviewMode();
 }
 
 function updateFormulaLab(step) {
@@ -1271,6 +1276,546 @@ function renderDemoGallery() {
   updateDemoActive();
 }
 
+function renderAdvancedImagingLabs() {
+  if (!els.advancedLab || !els.advancedTabs) return;
+  const content = getAdvancedImagingContent(currentLanguage);
+  const activeLab = content.labs.find((lab) => lab.id === currentAdvancedLabId) ?? content.labs[0];
+  currentAdvancedLabId = activeLab.id;
+  const activeValue = advancedLabValues.has(activeLab.id) ? advancedLabValues.get(activeLab.id) : activeLab.value;
+  const evaluation = evaluateAdvancedLab(activeLab, activeValue);
+
+  els.advancedEyebrow.textContent = content.labels.eyebrow;
+  els.advancedTitle.textContent = content.labels.title;
+  els.advancedIntro.textContent = content.labels.intro;
+  els.advancedDocsLink.textContent = content.labels.docs;
+  els.advancedDocsLink.href = currentLanguage === "zh"
+    ? "./docs/ADVANCED_IMAGING_SYSTEM_ROADMAP.zh-CN.md"
+    : "./docs/ADVANCED_IMAGING_SYSTEM_ROADMAP.en.md";
+  els.advancedScenarioTitle.textContent = content.labels.scenarios;
+
+  els.advancedTabs.innerHTML = "";
+  for (const lab of content.labs) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "advanced-tab advanced-case-card";
+    button.dataset.labId = lab.id;
+    button.style.setProperty("--lab-accent", lab.accent);
+    button.innerHTML = `
+      <span class="advanced-case-thumb">${advancedThumbSvg(lab.id)}</span>
+      <span class="advanced-case-name">${lab.caseTitle}</span>
+      <span class="advanced-case-topic">${lab.title}</span>
+    `;
+    button.setAttribute("role", "tab");
+    button.setAttribute("aria-selected", String(lab.id === activeLab.id));
+    button.classList.toggle("active", lab.id === activeLab.id);
+    button.addEventListener("click", () => {
+      currentAdvancedLabId = lab.id;
+      renderAdvancedImagingLabs();
+      const message = currentLanguage === "zh"
+        ? `已切换到${lab.title}。这里会把公式、参数、设备场景和工程取舍放在一起看。`
+        : `Switched to ${lab.title}. This lab connects formulas, controls, device scenarios, and engineering tradeoffs.`;
+      reactMascot("point", message);
+      movePetNear(els.advancedLab, message, "point");
+    });
+    els.advancedTabs.append(button);
+  }
+
+  els.advancedLab.innerHTML = advancedLabTemplate(activeLab, content.labels, activeValue, evaluation);
+  const slider = els.advancedLab.querySelector("#advancedLabSlider");
+  slider?.addEventListener("input", () => {
+    advancedLabValues.set(activeLab.id, Number(slider.value));
+    cancelAnimationFrame(advancedSliderFrame);
+    advancedSliderFrame = requestAnimationFrame(() => {
+      updateAdvancedLivePreview(activeLab, content.labels, Number(slider.value));
+    });
+    const message = currentLanguage === "zh"
+      ? `我正在把“${activeLab.controlLabel}”同步到高级成像示意图。注意指标和风险提示如何变化。`
+      : `I am syncing "${activeLab.controlLabel}" into the advanced imaging diagram. Watch the metric and risk note change.`;
+    reactMascot("think", message);
+  });
+  els.advancedLab.querySelector("#advancedDiagramButton")?.addEventListener("click", () => {
+    advancedPreviewMode = "diagram";
+    updateAdvancedLivePreview(activeLab, content.labels, Number(slider?.value ?? activeValue));
+  });
+  els.advancedLab.querySelector("#advancedSceneButton")?.addEventListener("click", () => {
+    advancedPreviewMode = "scene";
+    updateAdvancedLivePreview(activeLab, content.labels, Number(slider?.value ?? activeValue));
+  });
+  els.advancedLab.querySelector("#advancedLabReset")?.addEventListener("click", () => {
+    advancedLabValues.set(activeLab.id, activeLab.value);
+    renderAdvancedImagingLabs();
+    const message = currentLanguage === "zh" ? "高级成像模块已复位到教学默认值。" : "Advanced imaging lab reset to the teaching default.";
+    reactMascot("wave", message);
+    movePetNear(els.advancedLab, message, "wave");
+  });
+
+  els.advancedScenarios.innerHTML = "";
+  for (const scenario of content.scenarios) {
+    const article = document.createElement("article");
+    article.className = "scenario-card";
+    article.innerHTML = `
+      <img src="${scenario.thumbnail}" alt="" loading="lazy">
+      <strong>${scenario.title}</strong>
+      <span>${scenario.focus}</span>
+      <em>${scenario.demo}</em>
+      <p>${scenario.pipeline}</p>
+      <small>${scenario.control}</small>
+      <button type="button">${content.labels.openScenario}</button>
+    `;
+    article.querySelector("button")?.addEventListener("click", () => {
+      currentAdvancedLabId = scenario.labId;
+      renderAdvancedImagingLabs();
+      els.advancedLab.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      const message = currentLanguage === "zh"
+        ? `已打开${scenario.title}对应的演示案例：${scenario.demo}。`
+        : `Opened the ${scenario.title} demo case: ${scenario.demo}.`;
+      reactMascot("point", message);
+      movePetNear(els.advancedLab, message, "point");
+    });
+    els.advancedScenarios.append(article);
+  }
+}
+
+function advancedLabTemplate(lab, labels, value, evaluation) {
+  const valueLabel = `${Number(value).toFixed(lab.max > 100 ? 0 : 2)}${lab.unit ? ` ${lab.unit}` : ""}`;
+  const tasks = lab.tasks.map((task) => `<li>${task}</li>`).join("");
+  const beforeEval = { ...evaluation, score: Math.max(0.08, evaluation.score * 0.34), normalized: 0.18 };
+
+  return `
+    <article class="advanced-card" style="--lab-accent:${lab.accent}">
+      <div class="advanced-copy">
+        <p class="advanced-kicker">${labels.caseHeading}</p>
+        <h3>${lab.caseTitle}</h3>
+        <p class="advanced-device">${lab.device}</p>
+        <dl>
+          <div><dt>${labels.why}</dt><dd>${lab.why}</dd></div>
+          <div><dt>${labels.formula}</dt><dd><code>${lab.formula}</code></dd></div>
+          <div><dt>${labels.code}</dt><dd>${lab.code}</dd></div>
+        </dl>
+      </div>
+      <div class="advanced-visual">
+        <div class="advanced-robot-note">
+          <span class="advanced-robot-avatar" aria-hidden="true">P</span>
+          <p>${lab.robot}</p>
+        </div>
+        <div class="advanced-preview-grid">
+          <figure>
+            <figcaption>${labels.before}</figcaption>
+            <div id="advancedBeforePreview">${advancedPreviewSvg(lab, beforeEval, "before")}</div>
+          </figure>
+          <figure>
+            <figcaption>${labels.after}</figcaption>
+            <div id="advancedAfterPreview">${advancedPreviewSvg(lab, evaluation, "after")}</div>
+          </figure>
+        </div>
+        <label class="advanced-slider-label">${lab.controlLabel}
+          <span class="view-toggle advanced-view-toggle" aria-label="Advanced preview mode">
+            <button id="advancedDiagramButton" type="button" class="${advancedPreviewMode === "diagram" ? "active" : ""}">${currentLanguage === "zh" ? "示意" : "Diagram"}</button>
+            <button id="advancedSceneButton" type="button" class="${advancedPreviewMode === "scene" ? "active" : ""}">${currentLanguage === "zh" ? "真实" : "Scene"}</button>
+          </span>
+          <input id="advancedLabSlider" type="range" min="${lab.min}" max="${lab.max}" step="${lab.max > 100 ? 50 : 0.01}" value="${value}">
+          <output id="advancedLabValue">${valueLabel}</output>
+        </label>
+        <div class="advanced-metric">
+          <span>${labels.metric}: ${lab.metricLabel}</span>
+          <strong id="advancedMetricValue">${evaluation.percent}%</strong>
+          <em id="advancedRiskValue">${evaluation.risk}</em>
+        </div>
+        <div class="advanced-insight-grid">
+          <section>
+            <strong>${labels.observe}</strong>
+            <p>${advancedObservationText(lab, "observe")}</p>
+          </section>
+          <section>
+            <strong>${labels.failure}</strong>
+            <p>${advancedObservationText(lab, "failure")}</p>
+          </section>
+        </div>
+        <p class="advanced-explanation">${lab.explanation}</p>
+        <div class="advanced-deep-note">
+          <strong>${currentLanguage === "zh" ? "完整成像链路说明" : "Full pipeline walkthrough"}</strong>
+          <ol>
+            ${advancedPipelineWalkthrough(lab).map((item) => `<li>${item}</li>`).join("")}
+          </ol>
+        </div>
+        <div class="advanced-task-row">
+          <div>
+            <strong>${labels.tasks}</strong>
+            <ul>${tasks}</ul>
+          </div>
+          <button id="advancedLabReset" type="button">${labels.reset}</button>
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+function advancedObservationText(lab, type) {
+  const zh = currentLanguage === "zh";
+  const map = {
+    autofocus: {
+      observe: zh ? "看主体边缘是否从发软变清晰，同时看清晰度评分是否上升到峰值。" : "Watch subject edges move from soft to crisp while the sharpness score rises toward the peak.",
+      failure: zh ? "低纹理或滑动过快时，算法可能找不到稳定峰值，表现为来回拉焦。" : "With low texture or fast motion, the score peak becomes unstable and the lens may hunt."
+    },
+    exposure: {
+      observe: zh ? "看暗部是否被抬起、高光是否还保留层次，直方图不要全部挤到右边。" : "Watch shadows lift while highlights still keep texture; the histogram should not collapse into the right edge.",
+      failure: zh ? "曝光过高会让窗外、灯牌或皮肤高光变成纯白；过低会让暗部噪声变重。" : "Too much exposure clips windows, lamps, or skin highlights; too little exposure leaves noisy shadows."
+    },
+    color: {
+      observe: zh ? "先看灰色是否中性，再看肤色、天空、草地等记忆色是否自然。" : "Check neutral grays first, then skin, sky, grass, and other memory colors.",
+      failure: zh ? "只追求灰卡准确可能让肤色不舒服；只追求好看又可能造成整体偏色。" : "Pure chart accuracy can make skin unpleasant; pure preference can create a global color cast."
+    },
+    video: {
+      observe: zh ? "看噪点是否减少，同时观察运动主体后面有没有拖影或块状伪影。" : "Watch noise reduce while checking whether moving subjects leave ghost trails or block artifacts.",
+      failure: zh ? "时域融合太强会拖影，去块太强会把真实纹理抹平。" : "Too much temporal fusion creates ghosting; too much deblocking washes away real texture."
+    },
+    computational: {
+      observe: zh ? "看匹配线是否对齐同一个结构，融合后边缘和拼缝是否稳定。" : "Check whether match lines connect the same structure and whether fused edges/seams stay stable.",
+      failure: zh ? "错误匹配会造成鬼影、拼缝、错位和几何扭曲。" : "Bad matches create ghosting, seams, misalignment, and geometric bending."
+    },
+    ai: {
+      observe: zh ? "超分时看原始低分辨率块状边缘是否变细，去雾时看远处结构是否更清楚。" : "For SR, watch blocky low-res edges become finer; for dehaze, watch distant structure become clearer.",
+      failure: zh ? "AI 可能生成看似清晰但并不存在的纹理，高倍率和强去雾尤其要注意。" : "AI can invent plausible texture that was never measured, especially at high scale or strong dehaze."
+    }
+  };
+  return map[lab.family ?? lab.id]?.[type] ?? "";
+}
+
+function advancedPipelineWalkthrough(lab) {
+  const zh = currentLanguage === "zh";
+  const family = lab.family ?? lab.id;
+  if (family === "autofocus") {
+    return zh
+      ? [
+          "输入是一张有前后景深差异的真实拍摄场景：人脸、微距纹理、产品边缘或显微结构。",
+          "算法先把画面转成亮度图，在选定 ROI 内计算边缘能量或 Laplacian 方差，把它当作清晰度评分。",
+          "镜头马达从粗扫到细扫移动，评分峰值对应主体焦平面；视频模式还要限制速度，避免拉风箱和突兀跳焦。",
+          "工程上要额外处理低纹理、低光、运动主体、OIS 抖动和镜头行程限制，所以页面会同时显示成功指标和失败风险。"
+        ]
+      : [
+          "The input is a real depth scene: a face, macro texture, product edge, or microscopic structure.",
+          "The algorithm converts the preview to luma and computes edge energy or Laplacian variance inside the chosen ROI.",
+          "The lens motor scans from coarse to fine; the score peak corresponds to the subject plane. Video mode also limits speed to avoid hunting.",
+          "Production AF must handle low texture, low light, subject motion, OIS movement, and motor limits, so the lab shows both score and failure risk."
+        ];
+  }
+  if (family === "exposure") {
+    return zh
+      ? [
+          "输入是逆光、人像、夜景街灯或高动态范围场景，核心矛盾是暗部想变亮，高光又不能被裁成纯白。",
+          "AE 先统计亮度直方图、主体 ROI 和高光比例，再决定曝光时间、模拟增益或数字增益的变化方向。",
+          "拖动曝光参数时，页面会同步改变图像、指标和风险提示；高 EV 会抬亮暗部，但也会增加高光裁剪和噪声放大风险。",
+          "手机夜景和 HDR 往往不是单帧解决，而是用多帧曝光、对齐和融合，把动态范围、噪声和运动模糊一起权衡。"
+        ]
+      : [
+          "The input is a backlit, portrait, night-street, or high-dynamic-range scene where shadows need light but highlights must not clip.",
+          "AE reads the luma histogram, subject ROI, and clipping ratio, then updates exposure time, analog gain, or digital gain.",
+          "Dragging EV updates the image, metric, and risk note together; higher EV lifts shadows but increases clipping and amplified noise.",
+          "Phone night mode and HDR usually solve this with multi-frame exposure, alignment, and fusion instead of one perfect frame."
+        ];
+  }
+  if (family === "color") {
+    return zh
+      ? [
+          "输入是色卡、人像、混合光或屏幕显示目标，核心问题是把光源颜色和物体真实颜色分开。",
+          "AWB 先估计照明色，再用 RGB gain 把中性灰拉回灰色；CCM 再把相机 RGB 映射到 sRGB、P3 或 HDR 目标空间。",
+          "拖动色温时，灰阶、肤色和背景会一起变化；灰卡准确不一定代表人脸好看，所以要同时看记忆色。",
+          "真实手机会加入人脸检测、场景识别、肤色保护、色域映射和显示端补偿，避免一张图在不同屏幕上观感漂移。"
+        ]
+      : [
+          "The input is a color chart, portrait, mixed-light scene, or display target; the goal is separating illuminant color from object color.",
+          "AWB estimates illumination and applies RGB gains to neutralize gray; CCM maps camera RGB toward sRGB, P3, or HDR targets.",
+          "Dragging color temperature changes gray, skin, and background together; chart accuracy alone does not guarantee pleasing faces.",
+          "Real phones add face detection, scene priors, skin protection, gamut mapping, and display compensation to keep appearance stable."
+        ];
+  }
+  if (family === "video") {
+    return zh
+      ? [
+          "输入是连续帧，而不是单张照片；噪声、压缩块、运动拖影和延迟会同时影响观感。",
+          "时域降噪会对齐相邻帧，把可信的历史信息融合到当前帧；编解码修复则要识别块效应、振铃和纹理丢失。",
+          "拖动降噪或去块参数时，噪点会下降，但运动边缘和细纹理可能被抹平，所以需要观察 before/after 的副作用。",
+          "生产视频 pipeline 必须把画质、码率、功耗、热量和实时性放在一起评估，不能只追求单帧看起来干净。"
+        ]
+      : [
+          "The input is a sequence, not a still image; noise, blocks, motion ghosts, and latency all affect perception.",
+          "Temporal denoise aligns neighboring frames and fuses reliable history; codec repair detects blocking, ringing, and lost texture.",
+          "Dragging denoise or deblock lowers noise but may smear moving edges and fine texture, so the before/after side effects matter.",
+          "A production video pipeline must balance quality, bitrate, power, thermals, and latency instead of optimizing one still frame."
+        ];
+  }
+  if (family === "computational") {
+    return zh
+      ? [
+          "输入来自多帧或多摄：HDR 曝光序列、双目左右图、全景重叠图或多摄同步图。",
+          "算法先找特征点和匹配关系，再用 RANSAC、单应矩阵、视差或深度模型剔除错误匹配。",
+          "只有可信像素才允许融合；匹配置信度低时，HDR 会重影，全景会有拼缝，VR 左右眼会出现错位。",
+          "这类模块连接了投影几何、匹配、拼接、多目测量和多帧融合，是现代手机、VR 和计算摄影的核心能力。"
+        ]
+      : [
+          "The input comes from multiple frames or cameras: HDR brackets, stereo pairs, panorama overlaps, or synchronized modules.",
+          "The algorithm finds keypoints and matches, then uses RANSAC, homography, disparity, or depth models to reject outliers.",
+          "Only trusted pixels should be fused; low confidence creates HDR ghosts, panorama seams, or stereo misalignment.",
+          "This module connects projective geometry, matching, stitching, multi-view measurement, and multi-frame fusion."
+        ];
+  }
+  return zh
+    ? [
+        "输入是低分辨率、雾化、模糊、压缩或噪声图像，AI 模型负责恢复更清楚、更可读的输出。",
+        "超分案例应该从 1x 模糊输入出发，逐步观察 2x、3x、4x 后边缘和纹理如何被重建；不是简单把图片调亮。",
+        "Transformer、GAN、Diffusion 或 AIGC 模型可以提升感知清晰度，但也可能生成传感器没有采到的假纹理。",
+        "学习时要同时看清晰度提升和可信边界：真实结构更清楚是好结果，远处纹理突然过度丰富就要警惕。"
+      ]
+    : [
+        "The input is a low-resolution, hazy, blurred, compressed, or noisy image; AI predicts a clearer and more readable output.",
+        "The SR case starts from a 1x soft input and compares 2x, 3x, and 4x reconstructed edges and textures, not a simple brightness boost.",
+        "Transformer, GAN, Diffusion, or AIGC models can improve perceptual clarity but may hallucinate details never measured by the sensor.",
+        "Learning must track both clarity and trust boundaries: clearer real structure is good, suddenly rich distant texture needs caution."
+      ];
+}
+
+function updateAdvancedLivePreview(lab, labels, value) {
+  const evaluation = evaluateAdvancedLab(lab, value);
+  const beforeEval = { ...evaluation, score: Math.max(0.08, evaluation.score * 0.34), normalized: 0.18 };
+  const valueLabel = `${Number(value).toFixed(lab.max > 100 ? 0 : 2)}${lab.unit ? ` ${lab.unit}` : ""}`;
+  const before = els.advancedLab.querySelector("#advancedBeforePreview");
+  const after = els.advancedLab.querySelector("#advancedAfterPreview");
+  const output = els.advancedLab.querySelector("#advancedLabValue");
+  const metric = els.advancedLab.querySelector("#advancedMetricValue");
+  const risk = els.advancedLab.querySelector("#advancedRiskValue");
+  const diagramButton = els.advancedLab.querySelector("#advancedDiagramButton");
+  const sceneButton = els.advancedLab.querySelector("#advancedSceneButton");
+  if (before) before.innerHTML = advancedPreviewSvg(lab, beforeEval, "before");
+  if (after) after.innerHTML = advancedPreviewSvg(lab, evaluation, "after");
+  if (output) output.value = valueLabel;
+  if (metric) metric.textContent = `${evaluation.percent}%`;
+  if (risk) risk.textContent = evaluation.risk;
+  diagramButton?.classList.toggle("active", advancedPreviewMode === "diagram");
+  sceneButton?.classList.toggle("active", advancedPreviewMode === "scene");
+}
+
+function advancedThumbSvg(id) {
+  const thumbnail = {
+    autofocus: "./assets/scenarios/phone-photography.png",
+    autofocusMacro: "./assets/scenarios/camera-photography.png",
+    exposure: "./assets/scenarios/phone-photography.png",
+    exposureNight: "./assets/scenarios/cinema-camera.png",
+    color: "./assets/scenarios/display-output.png",
+    colorSkin: "./assets/scenarios/phone-photography.png",
+    video: "./assets/scenarios/medical-imaging.png",
+    videoCodec: "./assets/scenarios/display-output.png",
+    computational: "./assets/scenarios/vr-headset.png",
+    computationalPano: "./assets/scenarios/vr-headset.png",
+    ai: "./assets/scenarios/display-output.png",
+    aiDehaze: "./assets/scenarios/cinema-camera.png"
+  }[id] ?? "./assets/scenarios/camera-photography.png";
+  return `<img src="${thumbnail}" alt="" loading="lazy">`;
+}
+
+function advancedSceneAsset(lab) {
+  return {
+    autofocus: "./assets/scenarios/phone-photography.png",
+    autofocusMacro: "./assets/scenarios/camera-photography.png",
+    exposure: "./assets/scenarios/phone-photography.png",
+    exposureNight: "./assets/scenarios/cinema-camera.png",
+    color: "./assets/scenarios/display-output.png",
+    colorSkin: "./assets/scenarios/phone-photography.png",
+    video: "./assets/scenarios/medical-imaging.png",
+    videoCodec: "./assets/scenarios/display-output.png",
+    computational: "./assets/scenarios/vr-headset.png",
+    computationalPano: "./assets/scenarios/vr-headset.png",
+    ai: "./assets/scenarios/display-output.png",
+    aiDehaze: "./assets/scenarios/cinema-camera.png"
+  }[lab.id] ?? "./assets/scenarios/camera-photography.png";
+}
+
+function advancedScenePreview(lab, evaluation, mode) {
+  const family = lab.family ?? lab.id;
+  const score = clampNumber(evaluation.score, 0, 1);
+  const t = clampNumber(evaluation.normalized, 0, 1);
+  const before = mode === "before";
+  const img = advancedSceneAsset(lab);
+  const zh = currentLanguage === "zh";
+  const stateLabel = before ? (zh ? "调整前" : "before") : (zh ? "实时输出" : "live output");
+  let filter = "none";
+  let classes = ["advanced-photo-preview", `advanced-photo-${family}`];
+  let overlay = "";
+  let badge = `${stateLabel} · ${evaluation.percent}%`;
+
+  if (family === "autofocus") {
+    const blur = before ? 5.5 : Math.max(0.2, 5.5 - score * 5.2);
+    filter = `blur(${blur.toFixed(2)}px) contrast(${(0.88 + score * 0.2).toFixed(2)})`;
+    overlay = `<span class="focus-plane" style="left:${(18 + score * 64).toFixed(1)}%"></span>`;
+    badge = before ? (zh ? "镜头未合焦" : "off focus") : (zh ? `焦点评分 ${evaluation.percent}%` : `focus score ${evaluation.percent}%`);
+  } else if (family === "exposure") {
+    const brightness = before ? 0.62 : 0.58 + score * 0.72;
+    const contrast = before ? 0.88 : 0.78 + score * 0.34;
+    filter = `brightness(${brightness.toFixed(2)}) contrast(${contrast.toFixed(2)}) saturate(${(0.86 + score * 0.2).toFixed(2)})`;
+    overlay = `<span class="highlight-warning" style="opacity:${Math.max(0, t - 0.68).toFixed(2)}"></span>`;
+    badge = before ? (zh ? "主体偏暗 / 高光强" : "dark subject / strong highlights") : (zh ? `曝光平衡 ${evaluation.percent}%` : `exposure balance ${evaluation.percent}%`);
+  } else if (family === "color") {
+    const hue = before ? -10 : (t - 0.5) * 34;
+    const warmth = before ? 0.9 : 0.78 + (1 - Math.abs(t - 0.5)) * 0.28;
+    filter = `hue-rotate(${hue.toFixed(1)}deg) saturate(${warmth.toFixed(2)}) contrast(1.04)`;
+    overlay = `<span class="color-cast" style="background:${t < 0.42 ? "rgba(255,166,77,.22)" : "rgba(80,150,255,.18)"}"></span>`;
+    badge = before ? (zh ? "白点未校准" : "uncalibrated white") : (zh ? `中性/肤色 ${evaluation.percent}%` : `neutral color ${evaluation.percent}%`);
+  } else if (family === "video") {
+    const noise = before ? 0.45 : Math.max(0.08, 0.45 - score * 0.34);
+    const smooth = before ? 0 : t;
+    filter = `contrast(${(1.05 - smooth * 0.15).toFixed(2)}) brightness(${(0.86 + score * 0.16).toFixed(2)})`;
+    overlay = `<span class="noise-layer" style="opacity:${noise.toFixed(2)}"></span><span class="motion-ghost" style="opacity:${Math.max(0, t - 0.58).toFixed(2)}"></span>`;
+    badge = before ? (zh ? "噪声/结构混在一起" : "noise and structure mixed") : (zh ? `降噪权衡 ${evaluation.percent}%` : `denoise tradeoff ${evaluation.percent}%`);
+  } else if (family === "computational") {
+    const shift = before ? 14 : Math.max(0, 14 - score * 13);
+    filter = `contrast(${(0.92 + score * 0.18).toFixed(2)}) saturate(${(0.88 + score * 0.18).toFixed(2)})`;
+    overlay = `<img class="stereo-ghost" src="${img}" alt="" style="--shift:${shift.toFixed(1)}px; opacity:${(0.38 - score * 0.25).toFixed(2)}"><span class="match-grid" style="opacity:${(0.18 + score * 0.55).toFixed(2)}"></span>`;
+    badge = before ? (zh ? "左右眼未稳定对齐" : "stereo not aligned") : (zh ? `匹配置信 ${evaluation.percent}%` : `match confidence ${evaluation.percent}%`);
+  } else if (lab.id === "aiDehaze") {
+    const haze = before ? 0.58 : Math.max(0.06, 0.58 - score * 0.48);
+    filter = `contrast(${(0.78 + score * 0.42).toFixed(2)}) saturate(${(0.78 + score * 0.24).toFixed(2)})`;
+    overlay = `<span class="haze-layer" style="opacity:${haze.toFixed(2)}"></span>`;
+    badge = before ? (zh ? "雾化低对比输入" : "hazy low-contrast input") : (zh ? `恢复可信 ${evaluation.percent}%` : `recovery trust ${evaluation.percent}%`);
+  } else {
+    const scale = before ? 1 : lab.min + (lab.max - lab.min) * t;
+    const pixel = before ? 1 : Math.max(0, 1 - score);
+    classes.push(before ? "is-lowres" : "is-superres");
+    filter = `contrast(${(0.9 + score * 0.25).toFixed(2)}) saturate(${(0.9 + score * 0.18).toFixed(2)})`;
+    overlay = `<span class="sr-grid" style="opacity:${(0.42 + pixel * 0.28).toFixed(2)}; --cell:${Math.max(5, 18 - score * 12).toFixed(1)}px"></span>`;
+    badge = before ? (zh ? "1x 低清输入" : "1x low-res input") : `${scale.toFixed(1)}x SR · ${evaluation.percent}%`;
+  }
+
+  return `
+    <div class="${classes.join(" ")}" role="img" aria-label="${lab.caseTitle}">
+      <img class="advanced-scene-img" src="${img}" alt="" loading="lazy" style="filter:${filter}">
+      ${overlay}
+      <span class="advanced-photo-badge">${badge}</span>
+    </div>
+  `;
+}
+
+function advancedPreviewSvg(lab, evaluation, mode) {
+  if (advancedPreviewMode === "scene") return advancedScenePreview(lab, evaluation, mode);
+
+  const family = lab.family ?? lab.id;
+  const score = clampNumber(evaluation.score, 0, 1);
+  const t = clampNumber(evaluation.normalized, 0, 1);
+  const blur = mode === "before" ? 4 : Math.max(0, 5 - score * 5);
+  const brightness = family === "exposure" ? 0.25 + score * 0.95 : 0.72;
+  const warm = family === "color" ? 1 - t : 0.38;
+  const cool = family === "color" ? t : 0.44;
+  const ghost = family === "video" ? t : 0.22;
+  const detail = family === "ai" ? score : 0.55;
+  const match = family === "computational" ? score : 0.62;
+  const focus = family === "autofocus" ? score : 0.72;
+
+  if (family === "autofocus") {
+    return `
+      <svg class="advanced-image-svg" viewBox="0 0 320 190" role="img" aria-label="${lab.caseTitle}">
+        <defs><filter id="afBlur${mode}"><feGaussianBlur stdDeviation="${blur.toFixed(2)}"/></filter></defs>
+        <rect width="320" height="190" rx="10" fill="#dbe9ee"/>
+        <rect y="118" width="320" height="72" fill="#90b8aa"/>
+        <g filter="url(#afBlur${mode})">
+          <circle cx="160" cy="70" r="32" fill="#f0b28f"/>
+          <path d="M118 150 C128 112 192 112 202 150 Z" fill="#176b87"/>
+          <rect x="48" y="88" width="46" height="46" rx="8" fill="#ffffff" opacity=".85"/>
+          <rect x="230" y="62" width="46" height="66" rx="8" fill="#ffffff" opacity=".68"/>
+        </g>
+        <path d="M38 22 H282" stroke="#176b87" stroke-width="5" stroke-linecap="round" opacity=".25"/>
+        <circle cx="${(38 + focus * 244).toFixed(1)}" cy="22" r="8" fill="#176b87"/>
+      </svg>`;
+  }
+  if (family === "exposure") {
+    const sky = Math.round(130 + brightness * 90);
+    const room = Math.round(34 + brightness * 62);
+    return `
+      <svg class="advanced-image-svg" viewBox="0 0 320 190" role="img" aria-label="${lab.caseTitle}">
+        <rect width="320" height="190" rx="10" fill="rgb(${room},${room + 12},${room + 18})"/>
+        <rect x="178" y="30" width="92" height="122" rx="6" fill="rgb(${sky},${sky + 8},255)"/>
+        <path d="M60 154 C72 112 118 112 130 154 Z" fill="#324b5a"/>
+        <circle cx="95" cy="83" r="27" fill="#d89a78"/>
+        <rect x="190" y="42" width="68" height="98" fill="#fff4c9" opacity="${Math.min(0.85, 0.2 + brightness * 0.85).toFixed(2)}"/>
+        <path d="M34 164 H286" stroke="#ffffff" opacity=".35"/>
+      </svg>`;
+  }
+  if (family === "color") {
+    return `
+      <svg class="advanced-image-svg" viewBox="0 0 320 190" role="img" aria-label="${lab.caseTitle}">
+        <rect width="320" height="190" rx="10" fill="rgb(${Math.round(235 - cool * 50)},${Math.round(228)},${Math.round(218 + cool * 30)})"/>
+        <rect x="30" y="36" width="260" height="118" rx="8" fill="#f8fafb"/>
+        <g opacity=".95">
+          <rect x="48" y="54" width="44" height="34" fill="rgb(${Math.round(220 + warm * 35)},${Math.round(80 + cool * 25)},${Math.round(82 + cool * 60)})"/>
+          <rect x="100" y="54" width="44" height="34" fill="rgb(${Math.round(68 + warm * 30)},${Math.round(150)},${Math.round(82 + cool * 35)})"/>
+          <rect x="152" y="54" width="44" height="34" fill="rgb(${Math.round(82)},${Math.round(110 + cool * 28)},${Math.round(210 + cool * 40)})"/>
+          <rect x="204" y="54" width="44" height="34" fill="rgb(${Math.round(210 + warm * 32)},${Math.round(186 + warm * 12)},${Math.round(72 + cool * 32)})"/>
+          <rect x="74" y="104" width="44" height="34" fill="rgb(${Math.round(150 + warm * 30)},${Math.round(150)},${Math.round(150 + cool * 35)})"/>
+          <rect x="126" y="104" width="44" height="34" fill="rgb(${Math.round(100 + warm * 25)},${Math.round(100)},${Math.round(100 + cool * 30)})"/>
+          <rect x="178" y="104" width="44" height="34" fill="rgb(${Math.round(56 + warm * 18)},${Math.round(56)},${Math.round(56 + cool * 22)})"/>
+        </g>
+      </svg>`;
+  }
+  if (family === "video") {
+    return `
+      <svg class="advanced-image-svg" viewBox="0 0 320 190" role="img" aria-label="${lab.caseTitle}">
+        <rect width="320" height="190" rx="10" fill="#18212a"/>
+        <g opacity="${(0.18 + ghost * 0.42).toFixed(2)}">
+          <circle cx="${(106 + ghost * 34).toFixed(1)}" cy="94" r="28" fill="#8bd3ff"/>
+          <rect x="${(86 + ghost * 34).toFixed(1)}" y="122" width="58" height="22" rx="8" fill="#8bd3ff"/>
+        </g>
+        <circle cx="150" cy="94" r="28" fill="#f8fafb"/>
+        <rect x="130" y="122" width="58" height="22" rx="8" fill="#f8fafb"/>
+        ${Array.from({ length: 34 }, (_, i) => `<circle cx="${(20 + (i * 37) % 280)}" cy="${(20 + (i * 53) % 148)}" r="1.6" fill="#ffffff" opacity="${(0.42 - score * 0.32).toFixed(2)}"/>`).join("")}
+      </svg>`;
+  }
+  if (family === "computational") {
+    return `
+      <svg class="advanced-image-svg" viewBox="0 0 320 190" role="img" aria-label="${lab.caseTitle}">
+        <rect width="320" height="190" rx="10" fill="#edf8f5"/>
+        <rect x="28" y="36" width="112" height="108" rx="8" fill="#ffffff" stroke="#0f766e"/>
+        <rect x="180" y="36" width="112" height="108" rx="8" fill="#ffffff" stroke="#0f766e"/>
+        <path d="M48 124 L82 74 L116 124 Z" fill="#8bd3a7"/>
+        <path d="M200 124 L234 74 L268 124 Z" fill="#8bd3a7"/>
+        ${Array.from({ length: 8 }, (_, i) => {
+          const y = 55 + i * 10;
+          const x1 = 62 + (i % 3) * 20;
+          const x2 = 214 + (i % 3) * 20 + (1 - match) * (i % 2 ? 18 : -14);
+          return `<line x1="${x1}" y1="${y}" x2="${x2.toFixed(1)}" y2="${(y + (1 - match) * 18).toFixed(1)}" stroke="#0f766e" opacity="${(0.25 + match * 0.65).toFixed(2)}"/><circle cx="${x1}" cy="${y}" r="3" fill="#0f766e"/><circle cx="${x2.toFixed(1)}" cy="${(y + (1 - match) * 18).toFixed(1)}" r="3" fill="#0f766e"/>`;
+        }).join("")}
+      </svg>`;
+  }
+  if (lab.id === "aiDehaze") {
+    const haze = mode === "before" ? 0.72 : Math.max(0.08, 0.72 - detail * 0.62);
+    const contrast = mode === "before" ? 0.35 : 0.35 + detail * 0.65;
+    return `
+      <svg class="advanced-image-svg" viewBox="0 0 320 190" role="img" aria-label="${lab.caseTitle}">
+        <rect width="320" height="190" rx="10" fill="#dcecf3"/>
+        <path d="M0 128 L62 78 L112 126 L166 68 L238 132 L320 84 L320 190 L0 190 Z" fill="#54756d" opacity="${contrast.toFixed(2)}"/>
+        <path d="M0 150 C68 132 110 156 166 138 S252 118 320 140 L320 190 L0 190 Z" fill="#2f855a" opacity="${(0.28 + contrast * 0.45).toFixed(2)}"/>
+        <rect width="320" height="190" rx="10" fill="#ffffff" opacity="${haze.toFixed(2)}"/>
+        ${Array.from({ length: 18 }, (_, i) => `<path d="M${28 + i * 15} ${126 - (i % 5) * 7} l8 ${-10 - detail * 8} l8 ${10 + detail * 8}" stroke="#24463f" opacity="${(detail * 0.55).toFixed(2)}" fill="none"/>`).join("")}
+        <text x="18" y="28">${mode === "before" ? "hazy input" : `${Math.round(detail * 100)}% recovered`}</text>
+      </svg>`;
+  }
+  const cell = mode === "before" ? 14 : Math.max(4, 14 - detail * 9);
+  const srLabel = mode === "before" ? "1x low-res" : `${Number(lab.min + (lab.max - lab.min) * t).toFixed(1)}x SR`;
+  return `
+    <svg class="advanced-image-svg" viewBox="0 0 320 190" role="img" aria-label="${lab.caseTitle}">
+      <rect width="320" height="190" rx="10" fill="#fbedf4"/>
+      <rect x="34" y="34" width="104" height="112" rx="8" fill="#ffffff" stroke="#be185d"/>
+      <rect x="182" y="34" width="104" height="112" rx="8" fill="#ffffff" stroke="#be185d"/>
+      ${Array.from({ length: 7 }, (_, y) => Array.from({ length: 7 }, (_, x) => `<rect x="${48 + x * 12}" y="${50 + y * 12}" width="10" height="10" fill="${(x + y) % 2 ? "#c994b0" : "#f1d8e5"}"/>`).join("")).join("")}
+      ${Array.from({ length: 11 }, (_, i) => `<line x1="${196 + i * 7}" y1="50" x2="${196 + i * 7}" y2="132" stroke="#be185d" opacity="${(0.15 + detail * 0.5).toFixed(2)}"/><line x1="196" y1="${50 + i * 7}" x2="272" y2="${50 + i * 7}" stroke="#be185d" opacity="${(0.15 + detail * 0.5).toFixed(2)}"/>`).join("")}
+      ${Array.from({ length: Math.round(28 + detail * 38) }, (_, i) => {
+        const x = 198 + (i * 17) % 70;
+        const y = 52 + (i * 29) % 78;
+        const r = Math.max(1.1, cell / 7);
+        return `<circle cx="${x}" cy="${y}" r="${r.toFixed(1)}" fill="${i % 3 ? "#be185d" : "#f59ac2"}" opacity="${(0.25 + detail * 0.62).toFixed(2)}"/>`;
+      }).join("")}
+      <path d="M151 91 H169" stroke="#be185d" stroke-width="5" stroke-linecap="round"/>
+      <text x="44" y="164">low-res crop</text>
+      <text x="196" y="164">${srLabel}</text>
+    </svg>`;
+}
+
 function renderRail() {
   els.pipelineRail.innerHTML = "";
   for (const [key, label] of stageDefs) {
@@ -1374,6 +1919,8 @@ function render() {
     lastFinalImageData = rgbToImageData(result.finalRgb, currentRaw.width, currentRaw.height);
     renderStage("tone", result.finalRgb, 3, lastFinalImageData, rgb);
     selectStage(currentHeroStage);
+    drawFormulaScenePreview(tutorialSteps[currentTutorialIndex]?.key ?? currentHeroStage);
+    updateFormulaPreviewMode();
 
     const finalStats = computeStats(result.finalRgb, 3);
     els.frameReadout.textContent = `${currentRaw.width} x ${currentRaw.height} ${pattern}`;
@@ -1541,6 +2088,16 @@ els.presetButton.addEventListener("click", () => {
 
 els.language.addEventListener("change", () => {
   setLanguage(els.language.value);
+});
+
+els.formulaDiagramButton?.addEventListener("click", () => {
+  formulaPreviewMode = "diagram";
+  updateFormulaPreviewMode();
+});
+
+els.formulaSceneButton?.addEventListener("click", () => {
+  formulaPreviewMode = "scene";
+  updateFormulaPreviewMode();
 });
 
 els.fileInput.addEventListener("change", async () => {

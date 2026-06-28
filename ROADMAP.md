@@ -36,7 +36,25 @@ This roadmap turns RAW ISP RGB Lab from a portfolio-quality learning tool into a
 - Add packed RAW10/RAW12 unpacking notes or implementation.
 - Add camera-profile import experiments.
 
+## 0.5 Imaging Control Labs
+
+- Add Autofocus Lab with lens-position control, sharpness metrics, focus curves, and failure cases.
+- Add Auto Exposure Lab with luma statistics, ROI metering, highlight protection, and video-style smoothing.
+- Add Color System Lab with color temperature, tint, gray-card error, skin-tone shift, and display-target previews.
+
+## 0.6 Video And Computational Photography
+
+- Add video frame-sequence demos for codec artifacts, temporal denoise, restoration, and enhancement.
+- Add computational photography lessons for HDR fusion, projection geometry, matching, stitching, dehaze, deblur, and super-resolution.
+- Add AI imaging lessons for Transformer, GAN, diffusion, and AIGC enhancement with hallucination and trust-risk notes.
+
+## 0.7 Device Scenario Map
+
+- Add learning tracks for photography cameras, phone cameras, cinema cameras, VR headsets, medical imaging, and display output.
+- Keep every track tied to formulas, real image changes, code walkthroughs, and testable learning tasks.
+
 ## Long-Term Direction
 
 - Become a compact, visual, bilingual ISP learning lab for students and junior image engineers.
 - Provide a trustworthy bridge between formulas, image-quality intuition, and performance engineering.
+- Grow from a RAW ISP lab into a broader imaging-system learning platform.
